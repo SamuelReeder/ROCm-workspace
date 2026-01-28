@@ -1,0 +1,61 @@
+{
+  "projects": {
+    "therock": {
+      "name": "TheRock",
+      "path": "/home/AMD/sareeder/TheRock",
+      "type": "cmake-superbuild",
+      "venv": ".venv",
+      "buildDir": "build",
+      "remote": "git@github.com:ROCm/TheRock.git",
+      "worktrees": {
+        "main": {
+          "path": "/home/AMD/sareeder/TheRock",
+          "branch": "users/sareeder/install-latest-rocm"
+        },
+        "consumption": {
+          "path": "/home/AMD/sareeder/therock-consumption",
+          "branch": "users/sareeder/hipdnn-consumption-tests"
+        },
+        "miopen-plugin": {
+          "path": "/home/AMD/sareeder/therock-miopen-plugin-move",
+          "branch": "users/sareeder/miopen-plugin-move"
+        }
+      },
+      "aliases": ["rock", "therock", "hip", "rocm-build", "superbuild"],
+      "components": ["hipify", "clr", "rocblas", "rocfft", "miopen", "hipDNN", "composable_kernel", "rccl"]
+    },
+    "rocm-libraries": {
+      "name": "rocm-libraries",
+      "path": "/home/AMD/sareeder/full/rocm-libraries",
+      "type": "cmake-superbuild",
+      "venv": null,
+      "buildDir": "build",
+      "remote": "git@github.com:ROCm/rocm-libraries.git",
+      "worktrees": {},
+      "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider"],
+      "subprojects": ["composablekernel", "hipblas", "hipblaslt", "hipcub", "hipdnn", "hipfft", "hiprand", "hipsolver", "hipsparse", "hipsparselt", "hiptensor", "miopen", "rocblas", "rocfft", "rocprim", "rocrand", "rocsolver", "rocsparse", "rocthrust", "rocwmma"]
+    },
+    "mlse-tools": {
+      "name": "mlse-tools-internal",
+      "path": "/home/AMD/sareeder/mlse-tools-internal",
+      "type": "python",
+      "venv": null,
+      "buildDir": null,
+      "remote": "git@github.com:ROCm/mlse-tools-internal.git",
+      "worktrees": {},
+      "aliases": ["mlse", "tools", "automation", "alola", "slurm", "kubernetes", "staging", "promote"]
+    },
+    "dnn-benchmarking": {
+      "name": "dnn-benchmarking",
+      "path": "/home/AMD/sareeder/dnn-benchmarking",
+      "type": "python",
+      "venv": ".venv",
+      "buildDir": null,
+      "remote": "git@github.com:SamuelReeder/dnn-benchmarking.git",
+      "worktrees": {},
+      "aliases": ["bench", "benchmark", "dnn-bench", "perf", "benchmarking"]
+    }
+  },
+  "worktreeNamingPattern": "/home/AMD/sareeder/{project}-{worktree}",
+  "defaultBuildGenerator": "Ninja"
+}

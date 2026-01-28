@@ -1,0 +1,27 @@
+# Claude Code local settings and state
+.claude/settings.local.json
+.claude/plans/
+.claude/todos/
+.claude/debug/
+.claude/cache/
+.claude/shell-snapshots/
+.claude/file-history/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.so
+*.a
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
