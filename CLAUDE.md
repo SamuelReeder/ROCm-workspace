@@ -19,6 +19,24 @@ Centralized dispatch workspace for ROCm development projects.
 | consumption | ~/therock-consumption | users/sareeder/hipdnn-consumption-tests |
 | miopen-plugin | ~/therock-miopen-plugin-move | users/sareeder/miopen-plugin-move |
 
+## rocm-libraries Worktrees
+
+| Name | Path | Branch |
+|------|------|--------|
+| main | ~/full/rocm-libraries | users/sareeder/detail-migration |
+
+**To create a new rocm-libraries worktree for parallel work:**
+```bash
+cd ~/full/rocm-libraries
+git worktree add ~/rocmlibs-<name> <branch>
+# Example: git worktree add ~/rocmlibs-feature users/sareeder/new-feature
+```
+
+Each worktree is fully isolated with its own:
+- `projects/hipdnn/build/` - hipDNN build artifacts
+- `dnn-providers/*/build/` - Provider build artifacts
+- Working directory state
+
 ## Navigation
 
 - `/goto <project> [worktree]` - Navigate to project and load its context
