@@ -73,6 +73,29 @@ Use slash commands for direct navigation:
 /worktrees therock add feature-x users/sareeder/branch-name  # Create new worktree
 ```
 
+### Task Management
+
+Issues tracked locally with [beads_rust](https://github.com/Dicklesworthstone/beads_rust) (`br`) — SQLite-backed, survives session resets:
+
+```bash
+/task create "Fix convolution dispatch"  # Create a new task
+/task list                               # List all tasks with status/priority
+/task ready                              # Show actionable (unblocked) tasks
+/task show bd-abc                        # Show task details
+/task close bd-abc                       # Mark task as done
+/task q "Quick note"                     # Quick capture, prints ID only
+```
+
+Task data lives in `.beads/` (local-only, gitignored). Labels link tasks to projects (`therock`, `rocm-libraries`) and worktrees (`wt:main`, `wt:consumption`).
+
+### PR Workflow
+
+```bash
+/wip "fix convolution dispatch"   # Quick WIP commit in current project
+/prep-pr therock                  # Analyze commits, suggest PR title/summary
+/squash-prep therock              # Suggest squash strategy for clean history
+```
+
 ## Features
 
 ### Automatic Context Loading
@@ -158,18 +181,28 @@ dnn-benchmarking: main [clean]
 
 ```
 ROCm-workspace/
-├── CLAUDE.md                    # Hub instructions (minimal)
+├── CLAUDE.md                    # Hub instructions (minimal, ~335 tokens)
 ├── .claude/
-│   ├── commands/                # /goto, /status, /worktrees
+│   ├── commands/                # /goto, /status, /worktrees, /task, /wip, /prep-pr, /squash-prep
 │   ├── skills/                  # Auto-triggered based on context
 │   │   ├── project-router/      # Detect project from conversation
 │   │   ├── cmake-build/         # CMake/Ninja patterns
-│   │   ├── python-dev/          # Venv/pytest patterns
+│   │   ├── python-dev/          # Venv/pytest patterns + style guide ref
 │   │   └── worktree-setup/      # Auto-setup new worktrees
 │   ├── hooks/
 │   │   └── worktree-guard.md    # Prevent cross-contamination
 │   └── registry/
 │       └── projects.json        # Project metadata and paths
+├── .beads/                      # Local issue tracker (gitignored)
+│   ├── beads.db                 # SQLite database
+│   ├── issues.jsonl             # JSONL export
+│   └── config.yaml              # beads_rust config
+├── docs/                        # Reference documentation (tier 4)
+│   ├── README.md
+│   └── python-style-guide.md    # Python coding standards
+├── workflows/                   # Repeatable procedures (tier 4)
+│   ├── README.md
+│   └── debugging-tips.md        # CMake, ROCm, Python debugging
 └── README.md                    # This file
 ```
 
@@ -184,14 +217,26 @@ Skills activate automatically based on conversation context:
 | `python-dev` | You mention pytest, pip, venv, Python work |
 | `worktree-setup` | You create/enter worktree without setup |
 
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/goto <project> [worktree]` | Navigate to project and load its context |
+| `/status` | Show git status across all projects |
+| `/worktrees [project]` | List/manage worktrees |
+| `/task <list\|ready\|create\|show\|close\|update\|q>` | Issue tracker (beads_rust) |
+| `/wip [description]` | Quick WIP commit in current project |
+| `/prep-pr [project] [base]` | Prepare PR with commit analysis |
+| `/squash-prep [project] [base]` | Suggest squash strategy for clean history |
+
 ## Context Management
 
 The workspace uses tiered context loading to minimize token usage:
 
-1. **Hub CLAUDE.md** (~300 tokens) - Always loaded
+1. **Hub CLAUDE.md** (~335 tokens) - Always loaded
 2. **Project CLAUDE.md** (~1500 tokens) - Loaded when project detected
 3. **Skills** (~500 tokens each) - Loaded by conversation triggers
-4. **Deep docs** - Read by agent subprocesses, not main context
+4. **Deep docs** (`docs/`, `workflows/`) - Read on demand, never auto-loaded
 
 ## Requirements
 

@@ -31,7 +31,16 @@
       "venv": null,
       "buildDir": "build",
       "remote": "git@github.com:ROCm/rocm-libraries.git",
-      "worktrees": {},
+      "worktrees": {
+        "main": {
+          "path": "/home/AMD/sareeder/full/rocm-libraries",
+          "branch": "users/sareeder/detail-migration"
+        },
+        "remove-spdlog": {
+          "path": "/home/AMD/sareeder/rocmlibs-remove-spdlog",
+          "branch": "users/bharriso/remove-spdlog-consumer-dependency"
+        }
+      },
       "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider"],
       "subprojects": ["composablekernel", "hipblas", "hipblaslt", "hipcub", "hipdnn", "hipfft", "hiprand", "hipsolver", "hipsparse", "hipsparselt", "hiptensor", "miopen", "rocblas", "rocfft", "rocprim", "rocrand", "rocsolver", "rocsparse", "rocthrust", "rocwmma"]
     },

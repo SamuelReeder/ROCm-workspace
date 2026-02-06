@@ -6,6 +6,8 @@ version: 1.0.0
 
 # Python Development Patterns
 
+**Style guide:** Read `docs/python-style-guide.md` for full standards. Key rules: fail fast (no silent `None` returns), dataclasses not dicts/tuples, `pathlib.Path` not `os.path`, modern type syntax (`X | None` not `Optional[X]`), subprocess list form not shell strings.
+
 ## Virtual Environment Locations
 
 | Project | Venv Path |

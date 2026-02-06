@@ -34,9 +34,23 @@ TheRock uses an ExternalProject-based superbuild with component targets.
 hipify, clr, rocblas, rocfft, miopen, hipDNN, composable_kernel, rccl, rocprofiler
 
 ### TheRock Configuration
+
+These configurations are for TheRock only (not rocm-libraries).
+
+**hipDNN + MIOpen Provider development:**
 ```bash
 cmake -B build -GNinja \
-  -DTHEROCK_AMDGPU_FAMILIES=gfx1100 \
+  -DTHEROCK_ENABLE_ALL=OFF \
+  -DTHEROCK_ENABLE_HIPDNN=ON \
+  -DTHEROCK_ENABLE_MIOPEN_PROVIDER=ON \
+  -DMIOPEN_USE_COMPOSABLEKERNEL=ON \
+  -DTHEROCK_AMDGPU_FAMILIES=gfx90a
+```
+
+**Full ROCm build:**
+```bash
+cmake -B build -GNinja \
+  -DTHEROCK_AMDGPU_FAMILIES=gfx90a \
   -DCMAKE_C_COMPILER_LAUNCHER=ccache \
   -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 ```

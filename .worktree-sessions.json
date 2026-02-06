@@ -1,0 +1,34 @@
+{
+  "TheRock": {
+    "main": {
+      "path": "~/TheRock",
+      "branch": "users/sareeder/install-latest-rocm",
+      "session": null,
+      "claimed_at": null,
+      "purpose": null
+    },
+    "consumption": {
+      "path": "~/therock-consumption",
+      "branch": "users/sareeder/hipdnn-consumption-tests",
+      "session": null,
+      "claimed_at": null,
+      "purpose": null
+    },
+    "miopen-plugin": {
+      "path": "~/therock-miopen-plugin-move",
+      "branch": "users/sareeder/miopen-plugin-move",
+      "session": null,
+      "claimed_at": null,
+      "purpose": null
+    }
+  },
+  "rocm-libraries": {
+    "main": {
+      "path": "~/full/rocm-libraries",
+      "branch": "main",
+      "session": null,
+      "claimed_at": null,
+      "purpose": null
+    }
+  }
+}

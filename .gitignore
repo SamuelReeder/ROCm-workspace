@@ -1,3 +1,6 @@
+# beads_rust local issue tracker
+.beads/
+
 # Claude Code local settings and state
 .claude/settings.local.json
 .claude/plans/

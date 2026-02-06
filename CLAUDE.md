@@ -9,7 +9,7 @@ Centralized dispatch workspace for ROCm development projects.
 | TheRock | ~/TheRock | CMake superbuild |
 | rocm-libraries | ~/full/rocm-libraries | CMake superbuild |
 | mlse-tools | ~/mlse-tools-internal | Python scripts |
-| dnn-benchmarking | ~/dnn-benchmarking | Python package |
+| dnn-benchmarking | ~/tmp/dnn-benchmarking | Python package |
 
 ## TheRock Worktrees
 
@@ -42,6 +42,9 @@ Each worktree is fully isolated with its own:
 - `/goto <project> [worktree]` - Navigate to project and load its context
 - `/status` - Show git status across all projects
 - `/worktrees [project]` - List/manage worktrees
+- `/task <list|ready|create|show|close|update|q>` - Issue tracker (beads_rust)
+- `/wip [description]` - Quick WIP commit in current project
+- `/prep-pr [project] [base]` - Prepare PR with commit analysis
 
 ## Project Detection
 
@@ -52,3 +55,10 @@ Mention project names, library names (hipDNN, MIOpen, rocBLAS), or worktree name
 1. **Worktree Isolation**: Each worktree has its own build/ and .venv - never cross-contaminate
 2. **Absolute Paths**: Always use full paths to the correct worktree
 3. **Project CLAUDE.md**: Each project has detailed instructions in its own CLAUDE.md
+
+## Issue Tracking (beads_rust)
+
+Tasks tracked with `br` in `.beads/` (local-only, not committed to git).
+- `br list` or `/task list` — see all tasks
+- `br ready` or `/task ready` — actionable tasks
+- Labels map to projects (`therock`, `rocm-libraries`, etc.) and worktrees (`wt:main`, `wt:consumption`)
