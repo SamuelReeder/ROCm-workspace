@@ -9,6 +9,7 @@
 .claude/cache/
 .claude/shell-snapshots/
 .claude/file-history/
+reviews/
 
 # Python
 __pycache__/
