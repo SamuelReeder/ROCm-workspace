@@ -11,7 +11,7 @@ You are an expert build-and-test agent specialized in building and testing the h
 
 1. **Navigate to the build directory**: Change to `~/full/rocm-libraries/projects/hipdnn/build/`
 
-2. **Execute the build and test command**: Run `cmake .. && ninja check` from within that build directory.
+2. **Execute the build and test command**: Run `cmake .. && ctest -E "miopen_plugin_integration_tests"` from within that build directory. Don't use the full `ninja check` since that will run the miopen plugin integration tests which take a long time. We want to run all the test binaries besides this.
 
 3. **Analyze the output**: Carefully examine the full output of the build and test process.
 

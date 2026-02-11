@@ -140,25 +140,13 @@ Create the subdirectory if it doesn't exist (e.g. `reviews/therock/`, `reviews/r
 |-----|---------|
 | ... | ...     |
 
-## File-by-File Analysis
+## Issues
 
-### `path/to/file`
-
-<Description of changes to this file>
-
-<Findings, each on its own line:>
-- **[Critical]** Line N: <description>
-- **[Warning]** Line N: <description>
-- **[Suggestion]** Line N: <description>
-
-### `path/to/other-file`
-
-...
-
-## Issues Summary
+Each issue references the file and line. Only files with findings appear here.
 
 ### Critical
 <Numbered list or "None found.">
+1. `path/to/file` Line N: <description>
 
 ### Warnings
 <Numbered list or "None found.">
