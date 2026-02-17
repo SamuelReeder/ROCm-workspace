@@ -50,6 +50,10 @@ Each worktree is fully isolated with its own:
 
 Mention project names, library names (hipDNN, MIOpen, rocBLAS), or worktree names in your prompt - the workspace will automatically detect and use the correct project context.
 
+## New Branch / Worktree Setup
+
+When starting work on a new branch, use the `worktree-setup` agent to create a worktree. It validates the project/branch, creates the worktree with the correct naming convention, sets up the environment, and reports the result back.
+
 ## Key Rules
 
 1. **Worktree Isolation**: Each worktree has its own build/ and .venv - never cross-contaminate
