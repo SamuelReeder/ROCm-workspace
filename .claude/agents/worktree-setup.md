@@ -42,7 +42,9 @@ The prompt provides:
 
 ## Worktree Naming Convention
 
-Worktrees are created at `/home/AMD/sareeder/{prefix}-{name}`:
+### Default (manual) worktrees
+
+Created at `/home/AMD/sareeder/{prefix}-{name}`:
 
 | Project | Prefix | Example |
 |---------|--------|---------|
@@ -50,6 +52,12 @@ Worktrees are created at `/home/AMD/sareeder/{prefix}-{name}`:
 | rocm-libraries | `rocmlibs` | `/home/AMD/sareeder/rocmlibs-bugfix` |
 | mlse-tools | `mlse` | `/home/AMD/sareeder/mlse-experiment` |
 | dnn-benchmarking | `dnnbench` | `/home/AMD/sareeder/dnnbench-baseline` |
+
+### Orchestrated worktrees
+
+When the worktree name (or an explicit path) starts with `~/worktrees/` or `/home/AMD/sareeder/worktrees/`, use that full path as-is instead of the default `{prefix}-{name}` pattern. Create the `~/worktrees/` directory if it doesn't exist.
+
+Example: prompt says path `/home/AMD/sareeder/worktrees/rocmlibs-almiopen-123` → use that path directly.
 
 ## Workflow
 

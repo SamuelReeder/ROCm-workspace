@@ -39,6 +39,10 @@
         "remove-spdlog": {
           "path": "/home/AMD/sareeder/rocmlibs-remove-spdlog",
           "branch": "users/bharriso/remove-spdlog-consumer-dependency"
+        },
+        "almiopen-1098": {
+          "path": "/home/AMD/sareeder/worktrees/rocmlibs-almiopen-1098",
+          "branch": "users/sareeder/almiopen-1098/add-rmsnorm-frontend"
         }
       },
       "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider"],
