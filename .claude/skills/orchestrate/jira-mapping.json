@@ -1,0 +1,13 @@
+{
+  "project_key_map": {
+    "ALMIOPEN": "rocm-libraries",
+    "THEROCK": "therock",
+    "MLSE": "mlse-tools"
+  },
+  "base_branches": {
+    "therock": "main",
+    "rocm-libraries": "develop",
+    "mlse-tools": "main",
+    "dnn-benchmarking": "main"
+  }
+}

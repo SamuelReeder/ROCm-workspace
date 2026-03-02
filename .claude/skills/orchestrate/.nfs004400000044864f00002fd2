@@ -1,0 +1,291 @@
+---
+description: Orchestrate Jira tasks through implementation, review, and PR creation
+argument-hint: <JIRA-KEY> [JIRA-KEY ...]
+allowed-tools: [Bash, Read, Glob, Grep, Write, Edit, Task, ToolSearch, AskUserQuestion, TaskCreate, TaskUpdate, TaskList, TaskGet]
+---
+
+# Jira-to-PR Orchestration
+
+Automate the full lifecycle: Jira intake → beads task → worktree → implement → review → PR → Jira transition.
+
+**Arguments:** $ARGUMENTS
+
+Process each Jira key sequentially. Each task fully resolves before the next starts.
+
+---
+
+## Phase 1 — Jira Intake
+
+For each Jira key in `$ARGUMENTS`:
+
+1. Use `ToolSearch` to load Jira MCP tools:
+   ```
+   ToolSearch(query: "+jira get issue")
+   ```
+2. Call `jira_get_issue` with the Jira key to fetch:
+   - Summary, description, components, labels
+   - Project key, priority
+   - Acceptance criteria (check description and custom fields)
+3. Store the extracted data for use in subsequent phases.
+
+If the Jira key is invalid or inaccessible, report the error and skip to the next key.
+
+---
+
+## Phase 2 — Project Mapping
+
+Read the mapping config:
+```
+Read: .claude/skills/orchestrate/jira-mapping.json
+```
+
+Read the project registry:
+```
+Read: .claude/registry/projects.json
+```
+
+Match the Jira task to a ROCm project using this priority:
+1. **Jira components** → match against `projects.json` `components` and `subprojects` lists
+2. **Jira labels** → match against project keys and `aliases` in `projects.json`
+3. **Jira project key** → look up in `jira-mapping.json` `project_key_map`
+4. **Ambiguous** → use `AskUserQuestion` to let the user pick the target project
+
+Also determine the base branch from `jira-mapping.json` `base_branches`.
+
+---
+
+## Phase 3 — Beads Task Creation
+
+Create a beads task:
+
+```bash
+source "$HOME/.cargo/env"
+br create "<Jira summary>" --label <project-key> --label orchestrated
+br update <id> --external-ref "<JIRA-KEY>"
+```
+
+Set acceptance criteria and design notes:
+```bash
+br comments add <id> "Acceptance criteria: <criteria from Jira>"
+br comments add <id> "Jira description: <description summary>"
+```
+
+Store the beads task ID for subsequent phases.
+
+---
+
+## Phase 4 — Worktree Creation
+
+1. **Fetch latest** from the base branch:
+   ```bash
+   git -C <main-repo-path> fetch origin <base-branch>
+   ```
+
+2. **Derive branch name**:
+   - Format: `users/sareeder/<jira-key-lowercase>/<short-feature-summary>`
+   - Feature summary: derived from Jira title, kebab-cased, max ~40 chars
+   - Example: `users/sareeder/almiopen-123/add-convolution-descriptor-cache`
+
+3. **Create branch** from the latest base:
+   ```bash
+   git -C <main-repo-path> branch <branch-name> origin/<base-branch>
+   ```
+
+4. **Use `worktree-setup` agent** to create the worktree:
+   ```
+   Task(subagent_type="worktree-setup", prompt="Create a <project> worktree for branch <branch-name> at path /home/AMD/sareeder/worktrees/<prefix>-<jira-key-lowercase>")
+   ```
+   The worktree path uses `~/worktrees/` to keep orchestrated worktrees separate.
+
+5. **Update projects.json** with the new worktree entry.
+
+6. **Update beads task**:
+   ```bash
+   source "$HOME/.cargo/env"
+   br comments add <id> "Worktree: <path>, Branch: <branch>"
+   br update <id> --status in_progress
+   ```
+
+---
+
+## Phase 5 — Implementation
+
+Read the implementation template:
+```
+Read: .claude/skills/orchestrate/impl-template.md
+```
+
+Replace all `{{placeholders}}` with actual values:
+- `{{worktree_path}}` — full worktree path
+- `{{branch}}` — branch name
+- `{{project_name}}` — project name
+- `{{jira_key}}` — Jira key
+- `{{jira_description}}` — Jira description text
+- `{{acceptance_criteria}}` — acceptance criteria
+- `{{beads_id}}` — beads task ID
+
+Spawn a `general-purpose` subagent with the filled template:
+```
+Task(subagent_type="general-purpose", prompt=<filled template>, mode="bypassPermissions")
+```
+
+The implementation agent will:
+- Read the project CLAUDE.md
+- Explore relevant code
+- Plan and implement
+- Build/test to verify
+- Commit with descriptive messages
+- Update beads task with progress
+
+---
+
+## Phase 6 — Review
+
+Read the review template:
+```
+Read: .claude/skills/orchestrate/review-template.md
+```
+
+Replace all `{{placeholders}}` with actual values (same as Phase 5, plus `{{base_branch}}`).
+
+Spawn a `general-purpose` subagent with the filled template:
+```
+Task(subagent_type="general-purpose", prompt=<filled template>, mode="bypassPermissions")
+```
+
+The review agent will:
+- Find the merge base
+- Gather diff and commit stack
+- Read all changed files
+- Explore related context
+- Analyze for issues
+- Check acceptance criteria
+- Return a structured verdict: **PASS** or **FAIL** with classified findings
+
+---
+
+## Phase 7 — Implementation-Review Loop
+
+Maximum **3 iterations**.
+
+Parse the review agent's verdict:
+
+- **If PASS** → proceed to Phase 8
+- **If FAIL** → spawn a new implementation agent with the review findings appended to the prompt:
+  ```
+  <original impl template>
+
+  ## Review Findings to Address
+
+  <paste the review verdict with all findings>
+
+  Address each Critical and Warning finding. Make a separate commit per fix.
+  ```
+  Then re-run Phase 6 (review).
+- **After 3 FAIL iterations** → escalate to user:
+  ```
+  AskUserQuestion: "The implementation has failed review 3 times. Here are the remaining findings: <findings>. The worktree is at <path>. How would you like to proceed?"
+  Options: "Continue implementing (manual)", "Skip this task", "Try one more iteration"
+  ```
+
+Record each review iteration in beads:
+```bash
+source "$HOME/.cargo/env" && br comments add <id> "REVIEW [N/3]: <PASS|FAIL> - <summary>"
+```
+
+---
+
+## Phase 8 — Finalize (on PASS)
+
+### 1. Push the branch
+
+```bash
+git -C <worktree-path> push -u origin <branch>
+```
+
+### 2. Create PR
+
+```bash
+gh pr create --repo <remote-owner/repo> \
+  --head <branch> \
+  --base <base-branch> \
+  --title "<Jira key>: <Jira summary>" \
+  --body "$(cat <<'EOF'
+## Summary
+
+<Changes summary from implementation agent>
+
+## Jira
+
+[<JIRA-KEY>](https://<jira-instance>/browse/<JIRA-KEY>)
+
+## Review
+
+Automated review passed. Findings:
+<review summary>
+
+---
+Generated by `/orchestrate`
+EOF
+)"
+```
+
+### 3. Update beads task
+
+```bash
+source "$HOME/.cargo/env"
+br update <id> --external-ref "<JIRA-KEY> | <pr-url>"
+br update <id> --design "<synopsis of what was implemented and how>"
+br close <id>
+```
+
+### 4. Transition Jira
+
+Use ToolSearch to load Jira MCP tools if not already loaded.
+
+```
+jira_get_transitions(issue_key=<JIRA-KEY>)
+```
+
+Find the transition that moves to a review/in-review state and apply it:
+```
+jira_transition_issue(issue_key=<JIRA-KEY>, transition_id=<id>)
+```
+
+### 5. Add Jira comment
+
+```
+jira_add_comment(issue_key=<JIRA-KEY>, body="PR created: <pr-url>")
+```
+
+### 6. Report completion
+
+Output:
+- Jira key and summary
+- PR URL
+- Beads task ID
+- Review iterations count
+- Branch and worktree path
+
+---
+
+## Error Handling
+
+- **Jira MCP unavailable**: Report error, ask user if they want to proceed with manual Jira key info
+- **Worktree creation fails**: Report git error, stop processing this task
+- **Build/test failures in implementation**: Implementation agent handles retries internally
+- **Push fails**: Report error with the git message, ask user to resolve
+- **PR creation fails**: Report error, provide the manual `gh` command for the user
+
+---
+
+## Beads Update Protocol
+
+| Event | Command |
+|-------|---------|
+| Task claimed | `br update <id> --status in_progress` |
+| Progress | `br comments add <id> "<note>"` |
+| Blocker | `br comments add <id> "BLOCKED: <detail>"` |
+| Review result | `br comments add <id> "REVIEW [N/3]: PASS/FAIL - <summary>"` |
+| PR created | `br update <id> --external-ref "<JIRA-KEY> \| <pr-url>"` |
+| Task done | `br close <id>` with design field set to full synopsis |

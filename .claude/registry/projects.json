@@ -43,6 +43,14 @@
         "almiopen-1098": {
           "path": "/home/AMD/sareeder/worktrees/rocmlibs-almiopen-1098",
           "branch": "users/sareeder/almiopen-1098/add-rmsnorm-frontend"
+        },
+        "almiopen-1172": {
+          "path": "/home/AMD/sareeder/worktrees/rocmlibs-almiopen-1172",
+          "branch": "users/sareeder/almiopen-1172/auto-tuning-experimental"
+        },
+        "almiopen-1177": {
+          "path": "/home/AMD/sareeder/worktrees/rocmlibs-almiopen-1177",
+          "branch": "users/sareeder/almiopen-1177/block-scale-dequantize-frontend"
         }
       },
       "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider"],
