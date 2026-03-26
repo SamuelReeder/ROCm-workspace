@@ -51,6 +51,70 @@
         "almiopen-1177": {
           "path": "/home/AMD/sareeder/worktrees/rocmlibs-almiopen-1177",
           "branch": "users/sareeder/almiopen-1177/block-scale-dequantize-frontend"
+        },
+        "block-scale-quantize": {
+          "path": "/home/AMD/sareeder/worktrees/rocmlibs-block-scale-quantize",
+          "branch": "users/sareeder/block-scale-quantize-transpose"
+        },
+        "almiopen-1180": {
+          "path": "/home/AMD/sareeder/worktrees/rocmlibs-almiopen-1180",
+          "branch": "users/sareeder/almiopen-1180/descale-cpu-reference-impl"
+        },
+        "almiopen-1121": {
+          "path": "/home/AMD/sareeder/worktrees/rocmlibs-almiopen-1121",
+          "branch": "users/sareeder/almiopen-1121/add-matmul-descriptor"
+        },
+        "almiopen-1123": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1123",
+          "branch": "users/sareeder/almiopen-1123/add-sdpa-descriptor"
+        },
+        "almiopen-1263": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1263",
+          "branch": "users/sareeder/almiopen-1263/add-rmsnorm-descriptor"
+        },
+        "almiopen-1265": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1265",
+          "branch": "users/sareeder/almiopen-1265/add-quantize-descriptor"
+        },
+        "almiopen-1266": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1266",
+          "branch": "users/sareeder/almiopen-1266/add-dequantize-descriptor"
+        },
+        "almiopen-1117": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1117",
+          "branch": "users/sareeder/almiopen-1117/add-batchnorm-descriptor"
+        },
+        "almiopen-1147": {
+          "path": "/home/AMD/sareeder/worktrees/rocmlibs-almiopen-1147",
+          "branch": "users/sareeder/almiopen-1147/add-knob-descriptor"
+        },
+        "almiopen-1589": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1589",
+          "branch": "users/sareeder/almiopen-1589/add-sdpa-backward-descriptor"
+        },
+        "almiopen-1268": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1268",
+          "branch": "users/sareeder/almiopen-1268/add-layernorm-lifting"
+        },
+        "almiopen-1168": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1168",
+          "branch": "users/sareeder/almiopen-1168/add-knob-lifting"
+        },
+        "almiopen-1267": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1267",
+          "branch": "users/sareeder/almiopen-1267/add-rmsnorm-lifting"
+        },
+        "almiopen-1566": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1566",
+          "branch": "users/sareeder/almiopen-1566/add-matmul-lifting"
+        },
+        "almiopen-1269": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1269",
+          "branch": "users/sareeder/almiopen-1269/add-sdpa-lifting"
+        },
+        "almiopen-1625": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1625",
+          "branch": "users/sareeder/almiopen-1625/add-custom-op-lifting"
         }
       },
       "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider"],

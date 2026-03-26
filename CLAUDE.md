@@ -26,3 +26,9 @@ Centralized dispatch workspace for ROCm development projects.
 2. **Absolute Paths** — always use full paths to the correct worktree
 3. **Project CLAUDE.md** — load with `/goto` for project-specific instructions
 4. **Beads prefix** — all `br` commands require `source "$HOME/.cargo/env"` first
+
+## Commit & PR Conventions
+
+- **No ticket/project IDs** — do not include Jira ticket IDs or project keys in commit messages, PR titles, PR bodies, or branch names
+- **Commits** — use the `commit` subagent (`subagent_type="commit"`) to stage, pre-commit, commit, and push in isolation; write the commit message yourself (you have context), pass it to the agent
+- **PRs** — see `/create-pr` for full PR conventions
