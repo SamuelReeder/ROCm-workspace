@@ -6,8 +6,8 @@ Centralized dispatch workspace for ROCm development projects.
 
 - Projects, worktrees, paths, aliases → `.claude/registry/projects.json`
 - Commands → `.claude/commands/*.md` (invoke with `/command-name`)
-- Agents → `.claude/agents/*.md` (launched as subagents)
-- Skills → `.claude/skills/*/` (invoke with `/skill-name`)
+- Agents → `.shared/agents/*.md` (symlinked into `.claude/agents/` and `.codex/agents/`; sync Codex config with `scripts/sync_codex_agents.py`)
+- Skills → `.shared/skills/*/` (symlinked into `.claude/skills/` and `.codex/skills/`)
 - Task tracking → beads_rust (`br`) in `.beads/` — use `/task` command
 - Lessons learned → `tasks/lessons.md`
 

@@ -15,6 +15,19 @@ tasks/
 .claude/file-history/
 reviews/
 
+# Codex local settings and state; keep repo-defined skill and agent entrypoints
+.codex/*
+!.codex/agents/
+!.codex/skills/
+.codex/agents/*
+!.codex/agents/*.md
+.codex/skills/*
+!.codex/skills/review-pr
+
+# Generated locally from shared agent markdown; not committed because it may
+# contain machine-local trust settings and absolute paths.
+.codex/config.toml
+
 # Python
 __pycache__/
 *.py[cod]

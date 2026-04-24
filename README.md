@@ -113,14 +113,14 @@ The workspace prevents accidental cross-contamination with path validation.
 
 **TheRock:**
 ```bash
-ninja -C ~/therock-consumption/build hipDNN+build  # Incremental build
-ninja -C ~/TheRock/build miopen+expunge            # Clean rebuild
+ninja -j 128 -C ~/therock-consumption/build hipDNN+build  # Incremental build
+ninja -j 128 -C ~/TheRock/build miopen+expunge            # Clean rebuild
 ```
 
 **rocm-libraries:**
 ```bash
-ninja -C ~/full/rocm-libraries/build check         # Run tests
-ninja -C ~/full/rocm-libraries/build format        # Format code
+ninja -j 128 -C ~/full/rocm-libraries/build check         # Run tests
+ninja -j 128 -C ~/full/rocm-libraries/build format        # Format code
 ```
 
 ### Automatic Worktree Setup
@@ -158,7 +158,7 @@ Claude: [Creates worktree at ~/therock-ck-integration]
 You: "Build the composable_kernel component"
 
 Claude: [Detects TheRock from component name]
-        ninja -C ~/TheRock/build composable_kernel
+        ninja -j 128 -C ~/TheRock/build composable_kernel
         [Build succeeds]
 ```
 

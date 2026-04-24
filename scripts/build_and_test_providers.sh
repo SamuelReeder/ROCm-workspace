@@ -4,26 +4,24 @@
 #   cd /home/AMD/sareeder/worktrees/rocmlibs-plugin-sdk-flatbuffers
 #   /home/AMD/sareeder/ROCm-workspace/scripts/build_and_test_providers.sh
 #
-# Usage: build_and_test_providers.sh [--build-only]
+# Usage: build_and_test_providers.sh [--build-only] [--clean]
+#   --build-only  Skip running tests after building
+#   --clean       Remove each provider's build directory before configuring
 
 set -euo pipefail
 
 WORKTREE_ROOT="$(pwd)"
-HIPDNN_BUILD_DIR="${WORKTREE_ROOT}/projects/hipdnn/build"
-LOCAL_INSTALL="${HIPDNN_BUILD_DIR}/local_install"
 PROVIDERS_DIR="${WORKTREE_ROOT}/dnn-providers"
-BUILD_ONLY="${1:-}"
-
-if [[ ! -d "${HIPDNN_BUILD_DIR}" ]]; then
-    echo "ERROR: hipdnn build dir not found at ${HIPDNN_BUILD_DIR}"
-    echo "Make sure you're running from the root of a rocm-libraries worktree with a configured hipdnn build."
-    exit 1
-fi
+BUILD_ONLY=""
+CLEAN=""
+for arg in "$@"; do
+    case "$arg" in
+        --build-only) BUILD_ONLY="--build-only" ;;
+        --clean) CLEAN="--clean" ;;
+    esac
+done
 
 CMAKE_SDK_FLAGS=(
-    "-Dhipdnn_plugin_sdk_DIR=${LOCAL_INSTALL}/lib/cmake/hipdnn_plugin_sdk"
-    "-Dhipdnn_data_sdk_DIR=${LOCAL_INSTALL}/lib/cmake/hipdnn_data_sdk"
-    "-Dhipdnn_flatbuffers_sdk_DIR=${LOCAL_INSTALL}/lib/cmake/hipdnn_flatbuffers_sdk"
     "-DCMAKE_PREFIX_PATH=/opt/rocm"
     "-DCMAKE_BUILD_TYPE=Release"
 )
@@ -45,6 +43,12 @@ build_and_test_provider() {
         echo "SKIP: source directory not found"
         RESULTS[$name]="SKIP (no source)"
         return
+    fi
+
+    # Clean
+    if [[ -n "${CLEAN}" && -d "${bld}" ]]; then
+        echo "[clean] Removing ${bld}..."
+        rm -rf "${bld}"
     fi
 
     # Configure

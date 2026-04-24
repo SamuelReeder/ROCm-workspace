@@ -100,6 +100,10 @@
           "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1168",
           "branch": "users/sareeder/almiopen-1168/add-knob-lifting"
         },
+        "almiopen-1168-follow-up": {
+          "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1168-follow-up",
+          "branch": "users/sareeder/almiopen-1168/knob-lifting-follow-up"
+        },
         "almiopen-1267": {
           "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1267",
           "branch": "users/sareeder/almiopen-1267/add-rmsnorm-lifting"
@@ -115,6 +119,10 @@
         "almiopen-1625": {
           "path": "/home/AMD/sareeder/worktrees/rocm-libs-almiopen-1625",
           "branch": "users/sareeder/almiopen-1625/add-custom-op-lifting"
+        },
+        "test-dedup": {
+          "path": "/home/AMD/sareeder/worktrees/rocmlibs-test-dedup",
+          "branch": "users/sareeder/test-deduplication"
         }
       },
       "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider"],
@@ -139,6 +147,16 @@
       "remote": "git@github.com:SamuelReeder/dnn-benchmarking.git",
       "worktrees": {},
       "aliases": ["bench", "benchmark", "dnn-bench", "perf", "benchmarking"]
+    },
+    "cudnn-frontend": {
+      "name": "cudnn-frontend",
+      "path": "/home/AMD/sareeder/cudnn-frontend",
+      "type": "cmake",
+      "venv": null,
+      "buildDir": "build",
+      "remote": "https://github.com/NVIDIA/cudnn-frontend.git",
+      "worktrees": {},
+      "aliases": ["cudnn", "cudnn-fe", "frontend"]
     }
   },
   "worktreeNamingPattern": "/home/AMD/sareeder/{project}-{worktree}",
