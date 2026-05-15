@@ -20,6 +20,15 @@ Centralized dispatch workspace for ROCm development projects.
 5. **Self-improvement** — append lessons to `tasks/lessons.md` after corrections
 6. **Autonomous bug fixing** — attempt up to 3 fix iterations before escalating
 
+## Machine Detection
+
+Run `hostname` to determine where you are. Check `.claude/registry/machines.json` for known machines:
+- If hostname matches a `hostPattern`, read the machine's `context` doc before doing anything
+- Run the machine's `detectScript` to get GPU, enroot, and environment info
+- If on **Alola** (`ctr2-alola-login-*`): read `docs/machines/alola.md` — builds require enroot containers
+
+If no hostname match, check if project paths are accessible with `test -d` before assuming local.
+
 ## Key Rules
 
 1. **Worktree Isolation** — each worktree has its own `build/` and `.venv`
