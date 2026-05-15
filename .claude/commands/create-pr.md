@@ -10,27 +10,33 @@ Push the branch, create a draft PR, update the beads task, and report completion
 
 ## PR Conventions
 
-- Title format: `[hipDNN] <descriptive title>` — no Jira ticket ID anywhere in the PR (title, body, or branch name)
-- PR is always created as a **draft**
+- Title: `[hipDNN] <descriptive title>` — no Jira ticket IDs anywhere (title, body, branch)
+- Always draft
 - Assignee: `SamuelReeder`
 - No "Generated with Claude Code" footer
-- Use markdown formatting for code symbols, file names, function names, flags, etc. (e.g. `MyClass`, `--flag`, `file.cpp`)
+- Backtick-format symbols, files, and flags (e.g. `MyClass`, `--flag`, `file.cpp`)
 
-## PR Body Template
+## PR Body
+
+Keep the description high-level — the diff covers implementation details. Focus on *why* and *what changed conceptually*, not *how*.
 
 ```
 ## Motivation
 
-<Why this change is needed and what it achieves>
+<Why this change is needed and what problem it solves>
 
-## Technical Details
+## Changes
 
-<Plain unified summary of the approach and changes. Describe what was added or modified and why, using `code formatting` for symbols, files, and flags. Do not list files mechanically or reference review feedback — just explain the implementation.>
+<High-level summary of what changed. No file lists or line-level detail.>
+
+## Risk Assessment
+
+<Potential failure modes, regressions, or areas of concern. Note which are mitigated and which remain. If low-risk, say so briefly and why.>
 
 ## Test Plan
 
 - [ ] <test 1>
-- [x] <test 2 — mark completed tests with [x], pending with [ ]>
+- [x] <completed test>
 
 ## Submission Checklist
 
@@ -45,7 +51,7 @@ Push the branch, create a draft PR, update the beads task, and report completion
 git -C <worktree_path> push -u origin <branch>
 ```
 
-If push fails, report the error verbatim and stop.
+Stop and report verbatim if push fails.
 
 ### 2. Create draft PR
 
@@ -61,9 +67,13 @@ cd <worktree_path> && gh pr create --repo <remote_repo> \
 
 <motivation>
 
-## Technical Details
+## Changes
 
-<technical_details>
+<changes>
+
+## Risk Assessment
+
+<risk_assessment>
 
 ## Test Plan
 
@@ -83,7 +93,7 @@ Store the PR URL from the output.
 ```bash
 source "$HOME/.cargo/env"
 br update <beads_id> --external-ref "<jira_key> | <pr-url>"
-br update <beads_id> --design "<synopsis of what was implemented and how>"
+br update <beads_id> --design "<synopsis of what was implemented>"
 br close <beads_id>
 ```
 
