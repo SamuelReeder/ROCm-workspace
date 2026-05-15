@@ -35,6 +35,7 @@ If no hostname match, check if project paths are accessible with `test -d` befor
 2. **Absolute Paths** — always use full paths to the correct worktree
 3. **Project CLAUDE.md** — load with `/goto` for project-specific instructions
 4. **Beads prefix** — all `br` commands require `source "$HOME/.cargo/env"` first
+5. **Fresh worktrees** — before creating a new worktree, always fetch and pull the latest default branch (e.g., `main` or `develop`) of the project so the worktree starts from the most recent upstream state
 
 ## Commit & PR Conventions
 
