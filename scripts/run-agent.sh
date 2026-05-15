@@ -26,6 +26,12 @@ if [ -z "$CONTAINER" ] || [ -z "$SESSION_ID" ] || [ -z "$PROMPT" ]; then
     exit 1
 fi
 
+# Source Claude environment (API keys, proxy config)
+ENV_FILE="$HOME/.config/claude-code/env.sh"
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+fi
+
 # Ensure we're in the workspace
 cd "$SCRIPT_DIR"
 
@@ -56,5 +62,6 @@ CLAUDE_ARGS+=("${EXTRA_ARGS[@]}")
 CLAUDE_ARGS+=(-p "$PROMPT")
 
 # Run inside enroot container
+# Pass Claude env vars into the container since enroot starts a fresh shell
 enroot start --rw --mount "$HOME:$HOME" "$CONTAINER" -- \
-    bash -c "cd ~/ROCm-workspace && claude $(printf '%q ' "${CLAUDE_ARGS[@]}")"
+    bash -c "source '$ENV_FILE' 2>/dev/null; cd ~/ROCm-workspace && claude $(printf '%q ' "${CLAUDE_ARGS[@]}")"
