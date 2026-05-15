@@ -26,8 +26,8 @@ if [ -z "$CONTAINER" ] || [ -z "$SESSION_ID" ] || [ -z "$PROMPT" ]; then
     exit 1
 fi
 
-# Sync workspace
-cd "$SCRIPT_DIR" && git pull --ff-only -q 2>/dev/null || true
+# Ensure we're in the workspace
+cd "$SCRIPT_DIR"
 
 # Build claude args
 CLAUDE_ARGS=(--print --dangerously-skip-permissions)
