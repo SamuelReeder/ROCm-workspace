@@ -41,4 +41,4 @@ If no hostname match, check if project paths are accessible with `test -d` befor
 
 - **No ticket/project IDs** — do not include Jira ticket IDs or project keys in commit messages, PR titles, PR bodies, or branch names
 - **Commits** — use the `commit` subagent (`subagent_type="commit"`) to stage, pre-commit, commit, and push in isolation; write the commit message yourself (you have context), pass it to the agent
-- **PRs** — see `/create-pr` for full PR conventions
+- **PRs** — use the `pr-summary` skill for PR title/body conventions; create draft PRs unless the user explicitly asks for ready-for-review.

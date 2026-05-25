@@ -23,6 +23,10 @@ reviews/
 !.codex/agents/*.md
 .codex/skills/*
 !.codex/skills/review-pr
+!.codex/skills/pr-summary
+!.codex/skills/hipdnn-review
+!.codex/skills/hipdnn-superbuild
+!.codex/skills/hipdnn-superbuild-test
 
 # Generated locally from shared agent markdown; not committed because it may
 # contain machine-local trust settings and absolute paths.

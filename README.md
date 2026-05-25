@@ -92,9 +92,10 @@ Task data lives in `.beads/` (local-only, gitignored). Labels link tasks to proj
 
 ```bash
 /wip "fix convolution dispatch"   # Quick WIP commit in current project
-/prep-pr therock                  # Analyze commits, suggest PR title/summary
 /squash-prep therock              # Suggest squash strategy for clean history
 ```
+
+Use the `pr-summary` skill to draft or revise PR titles and descriptions.
 
 ## Features
 
@@ -183,12 +184,11 @@ dnn-benchmarking: main [clean]
 ROCm-workspace/
 ├── CLAUDE.md                    # Hub instructions (minimal, ~335 tokens)
 ├── .claude/
-│   ├── commands/                # /goto, /status, /worktrees, /task, /wip, /prep-pr, /squash-prep
-│   ├── skills/                  # Auto-triggered based on context
-│   │   ├── project-router/      # Detect project from conversation
-│   │   ├── cmake-build/         # CMake/Ninja patterns
-│   │   ├── python-dev/          # Venv/pytest patterns + style guide ref
-│   │   └── worktree-setup/      # Auto-setup new worktrees
+│   ├── commands/                # /goto, /status, /worktrees, /task, /wip, /squash-prep
+│   ├── skills/                  # Auto-triggered skills and workflow templates
+│   │   ├── pr-summary, review-pr -> ../../.shared/skills/*
+│   │   ├── hipdnn-* -> ../../.shared/skills/hipdnn-*
+│   │   └── descriptor-* / orchestrate templates
 │   ├── hooks/
 │   │   └── worktree-guard.md    # Prevent cross-contamination
 │   └── registry/
@@ -212,10 +212,11 @@ Skills activate automatically based on conversation context:
 
 | Skill | Activates When |
 |-------|----------------|
-| `project-router` | You mention project/library/worktree names |
-| `cmake-build` | You ask to build, compile, run ninja |
-| `python-dev` | You mention pytest, pip, venv, Python work |
-| `worktree-setup` | You create/enter worktree without setup |
+| `pr-summary` | You draft, revise, or create PR text |
+| `review-pr` | You review a branch or pull request |
+| `hipdnn-review` | You review hipDNN changes |
+| `hipdnn-superbuild` | You build hipDNN through the superbuild |
+| `hipdnn-superbuild-test` | You test an existing hipDNN superbuild |
 
 ## Commands
 
@@ -226,7 +227,6 @@ Skills activate automatically based on conversation context:
 | `/worktrees [project]` | List/manage worktrees |
 | `/task <list\|ready\|create\|show\|close\|update\|q>` | Issue tracker (beads_rust) |
 | `/wip [description]` | Quick WIP commit in current project |
-| `/prep-pr [project] [base]` | Prepare PR with commit analysis |
 | `/squash-prep [project] [base]` | Suggest squash strategy for clean history |
 
 ## Context Management

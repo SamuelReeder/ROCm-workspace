@@ -2,7 +2,12 @@
 
 You are finalizing the descriptor lowering implementation for the **{{NodePascal}}** operation — pushing the branch, creating a draft PR, and closing the beads task.
 
-Follow the PR creation process defined in `/home/AMD/sareeder/ROCm-workspace/.claude/commands/create-pr.md`.
+Use this PR creation flow:
+1. Push `{{branch}}`.
+2. Create a draft PR with `gh pr create --repo {{remote_repo}} --head {{branch}} --base {{base_branch}} --draft --assignee SamuelReeder`.
+3. Update and close the beads task with the PR URL.
+
+Use the `pr-summary` skill's title/body conventions for PR text.
 
 ## Context
 

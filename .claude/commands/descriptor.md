@@ -120,12 +120,11 @@ Draft:
 
 Use `AskUserQuestion` to present the draft and ask the user to approve or provide edits before proceeding.
 
-Once approved, read and follow `.claude/commands/create-pr.md` using:
-- Worktree: `<worktree_path>`
-- Branch: `<branch>`
-- Base branch: `develop`
-- Remote repo: `ROCm/rocm-libraries`
-- The confirmed title and body
+Once approved:
+- Use the `pr-summary` skill conventions for the confirmed title and body.
+- Push the branch with `git -C <worktree_path> push -u origin <branch>`.
+- Create a draft PR with `gh pr create --repo <remote_repo> --head <branch> --base develop --draft --assignee SamuelReeder`, passing the confirmed title and body.
+- Update the beads task with the PR URL and close it, sourcing `"$HOME/.cargo/env"` before running `br`.
 
 Output the PR URL to the user.
 
