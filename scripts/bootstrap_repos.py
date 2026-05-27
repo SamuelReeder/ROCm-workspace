@@ -149,7 +149,7 @@ def worktree_path(worktrees_dir: Path, project: Project, name: str) -> Path:
 def clone_command(project: Project, destination: Path, *, full_history: bool) -> list[str]:
     command = ["git", "clone"]
     if not full_history:
-        command.extend(["--depth", DEFAULT_CLONE_DEPTH, "--no-single-branch"])
+        command.extend(["--depth", DEFAULT_CLONE_DEPTH])
     if project.path and project.path.resolve() != destination.resolve() and project.path.exists():
         command.extend(["--reference-if-able", str(project.path)])
     command.extend([project.remote, str(destination)])
