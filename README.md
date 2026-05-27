@@ -28,7 +28,7 @@ python3 scripts/bootstrap_repos.py --dry-run
 python3 scripts/bootstrap_repos.py
 ```
 
-The script reads `.claude/registry/projects.json`, clones each project remote into `repos/<project>/`, and creates `worktrees/` for workspace-local worktrees. Both directories are gitignored.
+The script reads `.claude/registry/projects.json`, clones each project remote into `repos/<project>/`, and creates `worktrees/` for workspace-local worktrees. Both directories are gitignored. It does not initialize large submodules by default; add `--submodules` when a full recursive checkout is needed.
 
 Create a workspace-local worktree with:
 
@@ -38,7 +38,7 @@ python3 scripts/bootstrap_repos.py \
   --worktree rocm-libraries my-feature users/sareeder/my-feature
 ```
 
-That creates `worktrees/rocm-libraries/my-feature` from the local clone at `repos/rocm-libraries`. Add `--fetch` to update existing clones before use.
+That creates `worktrees/rocm-libraries/my-feature` from the local clone at `repos/rocm-libraries`. Add `--fetch` to update existing clones before use, and `--submodules` only when you need recursive submodule checkout.
 
 ### TheRock Worktrees
 

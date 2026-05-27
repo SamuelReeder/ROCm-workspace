@@ -35,7 +35,7 @@ To clone every registry project:
 python3 scripts/bootstrap_repos.py
 ```
 
-Use `--dry-run` first when you want to inspect the git commands without changing disk.
+Use `--dry-run` first when you want to inspect the git commands without changing disk. The bootstrap script clones top-level repositories only by default; add `--submodules` for recursive submodule initialization.
 
 ## Actions
 

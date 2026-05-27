@@ -154,12 +154,21 @@ def is_git_worktree(path: Path, *, dry_run: bool) -> bool:
     return output == "true"
 
 
-def ensure_project_clone(project: Project, repos_dir: Path, *, dry_run: bool, fetch: bool) -> Path:
+def ensure_project_clone(
+    project: Project,
+    repos_dir: Path,
+    *,
+    dry_run: bool,
+    fetch: bool,
+    submodules: bool,
+) -> Path:
     destination = repo_path(repos_dir, project)
     ensure_dir(repos_dir, dry_run=dry_run)
 
     if not destination.exists():
-        run(["git", "clone", "--recursive", project.remote, str(destination)], dry_run=dry_run)
+        run(["git", "clone", project.remote, str(destination)], dry_run=dry_run)
+        if submodules:
+            run(["git", "-C", str(destination), "submodule", "update", "--init", "--recursive"], dry_run=dry_run)
         return destination
 
     if not is_git_worktree(destination, dry_run=dry_run):
@@ -174,7 +183,8 @@ def ensure_project_clone(project: Project, repos_dir: Path, *, dry_run: bool, fe
 
     if fetch:
         run(["git", "-C", str(destination), "fetch", "--all", "--prune", "--tags"], dry_run=dry_run)
-        run(["git", "-C", str(destination), "submodule", "update", "--init", "--recursive"], dry_run=dry_run)
+        if submodules:
+            run(["git", "-C", str(destination), "submodule", "update", "--init", "--recursive"], dry_run=dry_run)
     else:
         print(f"= {destination} already exists; skipping fetch")
     return destination
@@ -192,7 +202,7 @@ def ensure_worktree(
     main_repo: Path | None = None,
 ) -> Path:
     if main_repo is None:
-        main_repo = ensure_project_clone(project, repos_dir, dry_run=dry_run, fetch=fetch)
+        main_repo = ensure_project_clone(project, repos_dir, dry_run=dry_run, fetch=fetch, submodules=False)
     destination = worktree_path(worktrees_dir, project, name)
     ensure_dir(destination.parent, dry_run=dry_run)
 
@@ -247,7 +257,12 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "--fetch",
         action="store_true",
-        help="fetch and update submodules for existing clones. Worktree creation fetches unless --no-fetch is set.",
+        help="fetch existing clones. Worktree creation fetches unless --no-fetch is set.",
+    )
+    parser.add_argument(
+        "--submodules",
+        action="store_true",
+        help="after cloning/fetching a repo, initialize and update its submodules recursively",
     )
     parser.add_argument(
         "--no-fetch",
@@ -288,7 +303,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     cloned: list[Path] = []
     prepared_repos: dict[str, Path] = {}
     for project in clone_targets:
-        cloned_path = ensure_project_clone(project, repos_dir, dry_run=args.dry_run, fetch=fetch_existing_clones)
+        cloned_path = ensure_project_clone(project, repos_dir, dry_run=args.dry_run, fetch=fetch_existing_clones, submodules=args.submodules)
         cloned.append(cloned_path)
         prepared_repos[project.key] = cloned_path
 
