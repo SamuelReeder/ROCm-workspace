@@ -63,6 +63,7 @@ class BootstrapReposTest(unittest.TestCase):
             key="rocm-libraries",
             name="rocm-libraries",
             remote="git@github.com:ROCm/rocm-libraries.git",
+            path=None,
             aliases=(),
         )
         base = Path("/tmp/worktrees")

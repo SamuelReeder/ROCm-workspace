@@ -35,7 +35,7 @@ This uses the configured `MARKHAM&GFX942` constraint and `/cluster/images/hipdnn
 
 - New-machine clones live under gitignored `repos/<project>/`.
 - Temporary/local worktrees live under gitignored `worktrees/<project>/<name>/`.
-- Bootstrap clones top-level repositories by default; use `--submodules` only when recursive submodule checkout is needed.
+- Bootstrap clones top-level repositories by default and reuses existing registry checkouts as Git object references; use `--submodules` only when recursive submodule checkout is needed.
 - Bootstrap all registry repos:
 
 ```bash

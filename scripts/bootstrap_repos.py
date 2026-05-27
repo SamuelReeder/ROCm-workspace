@@ -35,6 +35,7 @@ class Project:
     key: str
     name: str
     remote: str
+    path: Path | None
     aliases: tuple[str, ...]
 
 
@@ -102,10 +103,12 @@ def load_projects(registry_path: Path) -> dict[str, Project]:
         if not remote:
             continue
         aliases = tuple(str(alias).lower() for alias in raw.get("aliases", []) if str(alias).strip())
+        source_path = Path(str(raw.get("path")).replace("~", str(Path.home()), 1)).expanduser() if raw.get("path") else None
         projects[key] = Project(
             key=key,
             name=str(raw.get("name") or key),
             remote=remote,
+            path=source_path,
             aliases=aliases,
         )
     if not projects:
@@ -142,6 +145,13 @@ def worktree_path(worktrees_dir: Path, project: Project, name: str) -> Path:
     return worktrees_dir / project.key / name
 
 
+def clone_command(project: Project, destination: Path) -> list[str]:
+    command = ["git", "clone"]
+    if project.path and project.path.resolve() != destination.resolve() and project.path.exists():
+        command.extend(["--reference-if-able", str(project.path)])
+    command.extend([project.remote, str(destination)])
+    return command
+
 def is_git_worktree(path: Path, *, dry_run: bool) -> bool:
     if dry_run:
         return path.exists()
@@ -166,7 +176,7 @@ def ensure_project_clone(
     ensure_dir(repos_dir, dry_run=dry_run)
 
     if not destination.exists():
-        run(["git", "clone", project.remote, str(destination)], dry_run=dry_run)
+        run(clone_command(project, destination), dry_run=dry_run)
         if submodules:
             run(["git", "-C", str(destination), "submodule", "update", "--init", "--recursive"], dry_run=dry_run)
         return destination
