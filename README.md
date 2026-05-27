@@ -19,6 +19,27 @@ This workspace acts as a dispatch hub that automatically:
 | **mlse-tools-internal** | `~/mlse-tools-internal` | Python automation scripts |
 | **dnn-benchmarking** | `~/dnn-benchmarking` | Python benchmarking package |
 
+## Local Clone Bootstrap
+
+Use the bootstrap script to clone every registry project into this workspace instead of scattering fresh clones under `$HOME`:
+
+```bash
+python3 scripts/bootstrap_repos.py --dry-run
+python3 scripts/bootstrap_repos.py
+```
+
+The script reads `.claude/registry/projects.json`, clones each project remote into `repos/<project>/`, and creates `worktrees/` for workspace-local worktrees. Both directories are gitignored.
+
+Create a workspace-local worktree with:
+
+```bash
+python3 scripts/bootstrap_repos.py \
+  --project rocm-libraries \
+  --worktree rocm-libraries my-feature users/sareeder/my-feature
+```
+
+That creates `worktrees/rocm-libraries/my-feature` from the local clone at `repos/rocm-libraries`. Add `--fetch` to update existing clones before use.
+
 ### TheRock Worktrees
 
 | Name | Path | Branch |
@@ -241,8 +262,8 @@ The workspace uses tiered context loading to minimize token usage:
 ## Requirements
 
 - Claude Code CLI
-- Projects must exist at the paths specified in `registry/projects.json`
-- For TheRock worktrees: paths follow pattern `~/<project>-<worktree-name>`
+- `git` with access to each registry remote
+- Optional existing project paths from `registry/projects.json`; on a new machine, run `python3 scripts/bootstrap_repos.py` to populate workspace-local `repos/` and `worktrees/`.
 
 ## Customization
 

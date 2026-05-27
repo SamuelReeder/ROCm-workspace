@@ -3,6 +3,10 @@
 
 tasks/
 
+# Workspace-local project clones and worktrees
+repos/
+worktrees/
+
 
 # Claude Code local settings and state
 .claude/settings.local.json

@@ -6,76 +6,92 @@ allowed-tools: [Bash, Read, Write]
 
 # Worktree Management
 
-List, create, or remove worktrees for ROCm projects.
+List, create, or remove workspace-local ROCm project worktrees.
 
 **Arguments:** $ARGUMENTS
 
+## Layout
+
+Use the workspace-local bootstrap layout for new machines and new worktrees:
+
+```text
+repos/<project>/                  # canonical clone for the project
+worktrees/<project>/<name>/       # feature/debug worktrees
+```
+
+Both directories are gitignored. The project registry (`.claude/registry/projects.json`) remains the source of truth for project names and remotes.
+
+## Bootstrap Missing Repositories
+
+Before creating worktrees, ensure the source clone exists:
+
+```bash
+python3 scripts/bootstrap_repos.py --project <project>
+```
+
+To clone every registry project:
+
+```bash
+python3 scripts/bootstrap_repos.py
+```
+
+Use `--dry-run` first when you want to inspect the git commands without changing disk.
+
 ## Actions
 
-### No Arguments - List All Worktrees
-Show all worktrees across all projects:
+### No Arguments - List All Workspace Worktrees
+
+Show worktrees for local workspace clones that exist:
+
 ```bash
-git -C /home/AMD/sareeder/TheRock worktree list
-git -C /home/AMD/sareeder/full/rocm-libraries worktree list
-git -C /home/AMD/sareeder/mlse-tools-internal worktree list
-git -C /home/AMD/sareeder/dnn-benchmarking worktree list
+for repo in repos/*; do
+  test -d "$repo/.git" || continue
+  git -C "$repo" worktree list --verbose
+done
 ```
 
 ### `<project>` - List Project Worktrees
-Show worktrees for specific project:
+
+Show worktrees for one project:
+
 ```bash
-git -C <project-path> worktree list --verbose
+git -C repos/<project> worktree list --verbose
+```
+
+If `repos/<project>` does not exist yet, run:
+
+```bash
+python3 scripts/bootstrap_repos.py --project <project>
 ```
 
 ### `<project> add <name> <branch>` - Create New Worktree
 
-1. Resolve project to main repository path
-2. Determine worktree path using naming pattern: `/home/AMD/sareeder/<project>-<name>`
-3. Create worktree:
-   ```bash
-   git -C <main-repo> worktree add /home/AMD/sareeder/<project>-<name> <branch>
-   ```
-4. **Auto-setup for Python projects** (if project has venv):
-   ```bash
-   cd /home/AMD/sareeder/<project>-<name>
-   python3 -m venv .venv
-   source .venv/bin/activate && pip install -r requirements.txt
-   ```
-5. **Auto-setup for CMake projects**:
-   ```bash
-   # Build directory will be created on first build
-   # Just verify the worktree is ready
-   ```
-6. Update project registry to include new worktree
-7. Copy CLAUDE.md from main repo if it exists
+Create a workspace-local worktree under `worktrees/<project>/<name>`:
+
+```bash
+python3 scripts/bootstrap_repos.py \
+  --project <project> \
+  --worktree <project> <name> <branch>
+```
+
+The bootstrap script fetches before creating requested worktrees unless `--no-fetch` is passed. Worktree names must be simple path components: letters, numbers, dots, underscores, and dashes only.
 
 ### `<project> remove <name>` - Remove Worktree
 
-1. Resolve worktree path: `/home/AMD/sareeder/<project>-<name>`
-2. Confirm removal (warn about uncommitted changes)
-3. Remove worktree:
-   ```bash
-   git -C <main-repo> worktree remove /home/AMD/sareeder/<project>-<name>
-   ```
-4. Update project registry to remove worktree entry
+Before removing, inspect for uncommitted changes:
 
-## Naming Convention
-
-Worktrees are created at: `/home/AMD/sareeder/{project}-{worktree-name}`
-
-Examples:
-- `therock-ck-fix` for TheRock worktree named "ck-fix"
-- `rocm-libraries-feature-x` for rocm-libraries worktree
-
-## Registry Update
-
-After add/remove, update `/home/AMD/sareeder/ROCm-workspace/.claude/registry/projects.json`:
-
-```json
-"worktrees": {
-  "new-worktree": {
-    "path": "/home/AMD/sareeder/therock-new-worktree",
-    "branch": "users/sareeder/new-branch"
-  }
-}
+```bash
+git -C worktrees/<project>/<name> status --short
 ```
+
+Then remove through the source clone:
+
+```bash
+git -C repos/<project> worktree remove worktrees/<project>/<name>
+```
+
+Use `--force` only after confirming no work should be preserved.
+
+## Registry Updates
+
+Do not update `.claude/registry/projects.json` for temporary workspace-local worktrees. Add registry entries only for long-lived, shared worktrees that other agents should discover by name.
