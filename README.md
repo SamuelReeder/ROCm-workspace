@@ -81,39 +81,14 @@ Just mention the project, library, or worktree in your prompt:
 
 ### Option 2: Explicit Commands
 
-Use slash commands for direct navigation:
+Available slash commands:
 
 ```bash
-/goto therock              # Navigate to TheRock main
-/goto therock consumption  # Navigate to consumption worktree
-/goto libs                 # Navigate to rocm-libraries
-/goto bench                # Navigate to dnn-benchmarking
-
-/status                    # Show all projects and their git status
 /worktrees                 # List all worktrees across projects
 /worktrees therock add feature-x users/sareeder/branch-name  # Create new worktree
-```
-
-### Task Management
-
-Issues tracked locally with [beads_rust](https://github.com/Dicklesworthstone/beads_rust) (`br`) — SQLite-backed, survives session resets:
-
-```bash
-/task create "Fix convolution dispatch"  # Create a new task
-/task list                               # List all tasks with status/priority
-/task ready                              # Show actionable (unblocked) tasks
-/task show bd-abc                        # Show task details
-/task close bd-abc                       # Mark task as done
-/task q "Quick note"                     # Quick capture, prints ID only
-```
-
-Task data lives in `.beads/` (local-only, gitignored). Labels link tasks to projects (`therock`, `rocm-libraries`) and worktrees (`wt:main`, `wt:consumption`).
-
-### PR Workflow
-
-```bash
-/wip "fix convolution dispatch"   # Quick WIP commit in current project
-/squash-prep therock              # Suggest squash strategy for clean history
+/orchestrate ALMIOPEN-1234 # Run the Jira-to-PR orchestration workflow
+/review-pr rocm-libraries  # Review a branch or pull request
+/squash-prep therock       # Suggest squash strategy for clean history
 ```
 
 Use the `pr-summary` skill to draft or revise PR titles and descriptions.
@@ -184,19 +159,17 @@ Claude: [Detects TheRock from component name]
         [Build succeeds]
 ```
 
-### Multi-project status
+### Worktree management
 ```
-You: "/status"
+You: "/worktrees"
 
 Claude:
 TheRock
-  main: users/sareeder/install-latest-rocm [2 modified]
-  consumption: users/sareeder/hipdnn-consumption-tests [clean]
-  miopen-plugin: users/sareeder/miopen-plugin-move [1 modified]
+  main: users/sareeder/install-latest-rocm
+  consumption: users/sareeder/hipdnn-consumption-tests
 
-rocm-libraries: main [clean]
-mlse-tools-internal: main [clean]
-dnn-benchmarking: main [clean]
+rocm-libraries
+  main: users/sareeder/detail-migration
 ```
 
 ## Architecture
@@ -205,7 +178,7 @@ dnn-benchmarking: main [clean]
 ROCm-workspace/
 ├── CLAUDE.md                    # Hub instructions (minimal, ~335 tokens)
 ├── .claude/
-│   ├── commands/                # /goto, /status, /worktrees, /task, /wip, /squash-prep
+│   ├── commands/                # /worktrees, /orchestrate, /review-pr, /squash-prep
 │   ├── skills/                  # Auto-triggered skills and workflow templates
 │   │   ├── pr-summary, review-pr -> ../../.shared/skills/*
 │   │   ├── hipdnn-* -> ../../.shared/skills/hipdnn-*
@@ -243,11 +216,9 @@ Skills activate automatically based on conversation context:
 
 | Command | Description |
 |---------|-------------|
-| `/goto <project> [worktree]` | Navigate to project and load its context |
-| `/status` | Show git status across all projects |
 | `/worktrees [project]` | List/manage worktrees |
-| `/task <list\|ready\|create\|show\|close\|update\|q>` | Issue tracker (beads_rust) |
-| `/wip [description]` | Quick WIP commit in current project |
+| `/orchestrate <JIRA-KEY>` | Run the Jira-to-PR orchestration workflow |
+| `/review-pr [project]` | Review a branch or pull request |
 | `/squash-prep [project] [base]` | Suggest squash strategy for clean history |
 
 ## Context Management

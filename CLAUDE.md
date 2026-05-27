@@ -59,7 +59,7 @@ python3 scripts/bootstrap_repos.py --project rocm-libraries --worktree rocm-libr
 ## Key Rules
 
 1. Use absolute paths when operating inside project clones/worktrees.
-2. Do not rely on `/goto`; read the registry and project docs directly when context is needed.
+2. Read the registry and project docs directly when context is needed.
 3. Each worktree keeps its own `build/` and `.venv`.
 4. Before creating a fresh worktree from a moving base branch, fetch the source clone first.
 5. Beads commands require `source "$HOME/.cargo/env"` first.

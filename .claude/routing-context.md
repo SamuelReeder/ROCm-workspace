@@ -23,4 +23,4 @@ Verify paths with `test -d` before accessing — SSH may be needed.
 
 ## Jira: ALMIOPEN→rocm-libraries, THEROCK→therock, MLSE→mlse-tools
 
-Use `/goto <project>` to load full project context. Read machine context docs before working on remote machines.
+Use `.claude/registry/projects.json` to resolve project context. Read machine context docs before working on remote machines.
