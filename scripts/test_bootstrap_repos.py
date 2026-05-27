@@ -102,7 +102,7 @@ class BootstrapReposTest(unittest.TestCase):
             output = stdout.getvalue()
 
         self.assertEqual(rc, 0)
-        self.assertIn("git clone git@github.com:ROCm/rocm-libraries.git", output)
+        self.assertIn("git clone --depth 1 --no-single-branch git@github.com:ROCm/rocm-libraries.git", output)
         self.assertIn("worktree add", output)
         self.assertIn("worktrees/rocm-libraries/feature-x", output)
 

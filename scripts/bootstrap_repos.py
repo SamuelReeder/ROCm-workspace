@@ -27,6 +27,7 @@ WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REGISTRY = WORKSPACE_ROOT / ".claude" / "registry" / "projects.json"
 DEFAULT_REPOS_DIR = WORKSPACE_ROOT / "repos"
 DEFAULT_WORKTREES_DIR = WORKSPACE_ROOT / "worktrees"
+DEFAULT_CLONE_DEPTH = "1"
 SAFE_WORKTREE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
@@ -145,8 +146,10 @@ def worktree_path(worktrees_dir: Path, project: Project, name: str) -> Path:
     return worktrees_dir / project.key / name
 
 
-def clone_command(project: Project, destination: Path) -> list[str]:
+def clone_command(project: Project, destination: Path, *, full_history: bool) -> list[str]:
     command = ["git", "clone"]
+    if not full_history:
+        command.extend(["--depth", DEFAULT_CLONE_DEPTH, "--no-single-branch"])
     if project.path and project.path.resolve() != destination.resolve() and project.path.exists():
         command.extend(["--reference-if-able", str(project.path)])
     command.extend([project.remote, str(destination)])
@@ -174,12 +177,13 @@ def ensure_project_clone(
     dry_run: bool,
     fetch: bool,
     submodules: bool,
+    full_history: bool,
 ) -> Path:
     destination = repo_path(repos_dir, project)
     ensure_dir(repos_dir, dry_run=dry_run)
 
     if not destination.exists():
-        run(clone_command(project, destination), dry_run=dry_run)
+        run(clone_command(project, destination, full_history=full_history), dry_run=dry_run)
         if submodules:
             run(["git", "-C", str(destination), "submodule", "update", "--init", "--recursive"], dry_run=dry_run)
         return destination
@@ -215,7 +219,7 @@ def ensure_worktree(
     main_repo: Path | None = None,
 ) -> Path:
     if main_repo is None:
-        main_repo = ensure_project_clone(project, repos_dir, dry_run=dry_run, fetch=fetch, submodules=False)
+        main_repo = ensure_project_clone(project, repos_dir, dry_run=dry_run, fetch=fetch, submodules=False, full_history=False)
     destination = worktree_path(worktrees_dir, project, name)
     ensure_dir(destination.parent, dry_run=dry_run)
 
@@ -278,6 +282,11 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="after cloning/fetching a repo, initialize and update its submodules recursively",
     )
     parser.add_argument(
+        "--full-history",
+        action="store_true",
+        help="clone complete history instead of the default shallow all-branch clone",
+    )
+    parser.add_argument(
         "--no-fetch",
         action="store_true",
         help="do not fetch before creating requested worktrees",
@@ -316,7 +325,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     cloned: list[Path] = []
     prepared_repos: dict[str, Path] = {}
     for project in clone_targets:
-        cloned_path = ensure_project_clone(project, repos_dir, dry_run=args.dry_run, fetch=fetch_existing_clones, submodules=args.submodules)
+        cloned_path = ensure_project_clone(project, repos_dir, dry_run=args.dry_run, fetch=fetch_existing_clones, submodules=args.submodules, full_history=args.full_history)
         cloned.append(cloned_path)
         prepared_repos[project.key] = cloned_path
 

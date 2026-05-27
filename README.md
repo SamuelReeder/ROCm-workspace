@@ -28,7 +28,7 @@ python3 scripts/bootstrap_repos.py --dry-run
 python3 scripts/bootstrap_repos.py
 ```
 
-The script reads `.claude/registry/projects.json`, clones each project remote into `repos/<project>/`, and creates `worktrees/` for workspace-local worktrees. Both directories are gitignored. If the registry path already exists, the script uses it as a Git object reference to avoid downloading duplicate history. It does not initialize large submodules by default; add `--submodules` when a full recursive checkout is needed.
+The script reads `.claude/registry/projects.json`, clones each project remote into `repos/<project>/`, and creates `worktrees/` for workspace-local worktrees. Both directories are gitignored. New clones are shallow all-branch checkouts by default; add `--full-history` if complete history is required. If the registry path already exists, the script uses it as a Git object reference to avoid downloading duplicate objects. It does not initialize large submodules by default; add `--submodules` when a full recursive checkout is needed.
 
 Create a workspace-local worktree with:
 
