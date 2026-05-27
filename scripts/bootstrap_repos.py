@@ -158,10 +158,13 @@ def is_git_worktree(path: Path, *, dry_run: bool) -> bool:
     if not path.exists():
         return False
     try:
-        output = run(["git", "-C", str(path), "rev-parse", "--is-inside-work-tree"], dry_run=False, capture=True)
+        top_level = run(["git", "-C", str(path), "rev-parse", "--show-toplevel"], dry_run=False, capture=True)
     except CommandError:
         return False
-    return output == "true"
+    try:
+        return Path(top_level).resolve() == path.resolve()
+    except OSError:
+        return False
 
 
 def ensure_project_clone(

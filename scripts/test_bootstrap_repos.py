@@ -4,6 +4,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import tempfile
+import subprocess
 import sys
 import unittest
 from contextlib import redirect_stdout
@@ -73,6 +74,16 @@ class BootstrapReposTest(unittest.TestCase):
         )
         with self.assertRaises(bootstrap_repos.BootstrapError):
             bootstrap_repos.worktree_path(base, project, "../escape")
+
+    def test_is_git_worktree_rejects_nested_plain_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(["git", "init", str(root)], check=True, stdout=subprocess.DEVNULL)
+            nested = root / "repos" / "not-a-repo"
+            nested.mkdir(parents=True)
+
+            self.assertEqual(bootstrap_repos.is_git_worktree(root, dry_run=False), True)
+            self.assertEqual(bootstrap_repos.is_git_worktree(nested, dry_run=False), False)
 
     def test_dry_run_prints_clone_and_worktree_commands(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
