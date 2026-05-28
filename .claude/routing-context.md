@@ -9,6 +9,7 @@ Verify paths with `test -d` before accessing — SSH may be needed.
 - Ordinary code reading, editing, review, planning, and research should use the HPE-local checkout/state.
 - ROCm builds/tests/benchmarks, CMake/Ninja/ctest, provider verification, hipcc, rocminfo, rocm-smi, and GPU runtime work must run through durable Alola sessions, not directly on HPE.
 - Use `workspace/scripts/alola-session run -- <command>` for the default Alola login-node enroot session (`node=03`, `asic=gfx90a`).
+- Alola home/project paths and images are shared, but login-node enroot rootfses are node-local under `/var/tmp/<uid>/enroot-data`. If `enroot list` is empty on a login node, recreate the named rootfs from `/cluster/images/hipdnn` rather than assuming project storage is missing.
 - Use `workspace/scripts/alola-session run --target <asic> -- <command>` for a non-exclusive GPU allocation. GPU constraints default to `MARKHAM&<ASIC_UPPER>` and images follow `/cluster/images/hipdnn/hipdnn_latest_<asic>.sqsh`.
 
 ## Projects

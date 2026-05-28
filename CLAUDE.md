@@ -23,6 +23,7 @@ workspace/scripts/alola-session run -- <command>
 ```
 
 - The default Alola target is login node `03`, ASIC `gfx90a`, in the login enroot container `sareeder-latest_container`.
+- Alola home/project paths and images are shared, but login-node enroot rootfses are node-local under `/var/tmp/<uid>/enroot-data`. If `enroot list` is empty on a login node, recreate the named rootfs from `/cluster/images/hipdnn` rather than assuming project storage is missing.
 - Explicit GPU targets allocate a compute node through SLURM, for example:
 
 ```bash

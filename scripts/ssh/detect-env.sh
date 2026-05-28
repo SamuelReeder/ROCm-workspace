@@ -6,8 +6,14 @@
 echo "HOSTNAME=$(hostname)"
 echo "USER=$USER"
 echo "HOME=$HOME"
+DEFAULT_LOGIN_CONTAINER="${ALOLA_DEFAULT_LOGIN_CONTAINER:-sareeder-latest_container}"
+echo "ENROOT_DEFAULT_LOGIN_CONTAINER=$DEFAULT_LOGIN_CONTAINER"
+echo "ENROOT_CONTAINER_SCOPE=node-local_rootfs"
+echo "ENROOT_SHARED_IMAGE_DIR=/cluster/images/hipdnn"
 
-# Enroot container detection
+# Enroot container rootfses listed by `enroot list` are node-local under
+# /var/tmp/<uid>/enroot-data. Shared images live under /cluster/images/hipdnn
+# and can be used to recreate a missing node-local rootfs.
 if [ -f /etc/enroot ]; then
   echo "IN_ENROOT=yes"
   echo "ENROOT_NAME=$(cat /etc/enroot 2>/dev/null || echo unknown)"

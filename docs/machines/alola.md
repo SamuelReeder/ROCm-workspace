@@ -1,6 +1,6 @@
 # Alola Cluster
 
-Alola login nodes (`ctr2-alola-login-03`, `ctr2-alola-login-04`) share the same NFS home directory and project paths. Teams agents are hosted on HPE by default; Alola is the durable execution backend for ROCm builds, tests, benchmarks, GPU runtime checks, and provider verification.
+Alola login nodes (`ctr2-alola-login-03`, `ctr2-alola-login-04`) share the same NFS home directory, project paths, and `/cluster/images/hipdnn` image store. Named enroot container rootfses reported by `enroot list` are node-local under `/var/tmp/<uid>/enroot-data`. Teams agents are hosted on HPE by default; Alola is the durable execution backend for ROCm builds, tests, benchmarks, GPU runtime checks, and provider verification.
 
 ## Controller model
 
@@ -12,6 +12,7 @@ Alola login nodes (`ctr2-alola-login-03`, `ctr2-alola-login-04`) share the same 
 ## Default targets
 
 - Plain build/test/runtime work should use the default login-node enroot target: node `03`, ASIC `gfx90a`, container `sareeder-latest_container`.
+- The default login container rootfs is node-local. If a login node reports `ENROOT_CONTAINERS=none` or lacks `sareeder-latest_container`, recreate it from the shared image with `enroot create -n sareeder-latest_container /cluster/images/hipdnn/hipdnn_latest_gfx90a.sqsh`, then retry the default target.
 - A named ASIC such as `gfx942` or `gfx950` requests a non-exclusive SLURM GPU allocation.
 - GPU image names follow `/cluster/images/hipdnn/hipdnn_latest_<asic>.sqsh`.
 - GPU constraints default to `MARKHAM&<ASIC_UPPER>` so work lands on Markham nodes with the expected `/home/AMD/sareeder/...` worktrees.
@@ -66,7 +67,7 @@ pwd
 command -v hipcc
 ```
 
-The detect script reports GPU type, whether the shell is inside enroot, available containers, ROCm version, and accessible project paths.
+The detect script reports GPU type, whether the shell is inside enroot, the configured login container, node-local enroot rootfses, ROCm version, and accessible project paths. Treat an empty enroot list as a missing node-local rootfs; recreate it from the shared image instead of assuming home or project storage is missing.
 
 ## Build/test examples
 
