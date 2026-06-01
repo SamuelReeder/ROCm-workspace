@@ -1,6 +1,6 @@
 # Python Style Guide
 
-Coding standards for Python across ROCm workspace projects (mlse-tools, dnn-benchmarking, TheRock scripts).
+Coding standards for Python across ROCm workspace projects (mlse-tools and TheRock scripts).
 
 ## Core Principles
 
@@ -200,10 +200,6 @@ def _parse_csv_row(row: list[str]) -> BenchmarkResult:
 - Mark GPU-dependent tests with `@pytest.mark.gpu`
 
 ## Project-Specific Notes
-
-### dnn-benchmarking
-- Editable install: `pip install -e .`
-- Non-GPU tests: `pytest -m "not gpu"`
 
 ### mlse-tools
 - Uses system Python (no venv)

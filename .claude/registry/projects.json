@@ -125,8 +125,8 @@
           "branch": "users/sareeder/test-deduplication"
         }
       },
-      "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider"],
-      "subprojects": ["composablekernel", "hipblas", "hipblaslt", "hipcub", "hipdnn", "hipfft", "hiprand", "hipsolver", "hipsparse", "hipsparselt", "hiptensor", "miopen", "rocblas", "rocfft", "rocprim", "rocrand", "rocsolver", "rocsparse", "rocthrust", "rocwmma"]
+      "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider", "dnn-benchmarking", "bench", "benchmark", "dnn-bench", "perf", "benchmarking"],
+      "subprojects": ["composablekernel", "dnn-benchmarking", "hipblas", "hipblaslt", "hipcub", "hipdnn", "hipfft", "hiprand", "hipsolver", "hipsparse", "hipsparselt", "hiptensor", "miopen", "rocblas", "rocfft", "rocprim", "rocrand", "rocsolver", "rocsparse", "rocthrust", "rocwmma"]
     },
     "mlse-tools": {
       "name": "mlse-tools-internal",
@@ -137,16 +137,6 @@
       "remote": "git@github.com:ROCm/mlse-tools-internal.git",
       "worktrees": {},
       "aliases": ["mlse", "tools", "automation", "alola", "slurm", "kubernetes", "staging", "promote"]
-    },
-    "dnn-benchmarking": {
-      "name": "dnn-benchmarking",
-      "path": "/home/AMD/sareeder/dnn-benchmarking",
-      "type": "python",
-      "venv": ".venv",
-      "buildDir": null,
-      "remote": "git@github.com:SamuelReeder/dnn-benchmarking.git",
-      "worktrees": {},
-      "aliases": ["bench", "benchmark", "dnn-bench", "perf", "benchmarking"]
     },
     "cudnn-frontend": {
       "name": "cudnn-frontend",

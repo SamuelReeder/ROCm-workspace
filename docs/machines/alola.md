@@ -88,7 +88,6 @@ workspace/scripts/alola-session run --target gfx942 -- \
 | `/home/AMD/sareeder/TheRock` | TheRock superbuild |
 | `/home/AMD/sareeder/full/rocm-libraries` | rocm-libraries |
 | `/home/AMD/sareeder/mlse-tools-internal` | mlse-tools |
-| `/home/AMD/sareeder/dnn-benchmarking` | dnn-benchmarking |
 
 ## Cleanup
 

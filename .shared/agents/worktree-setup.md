@@ -27,9 +27,11 @@ You are a worktree setup agent. You create git worktrees for ROCm projects and s
 ## Input
 
 The prompt provides:
-1. **Project name** — which project (TheRock, rocm-libraries, mlse-tools, dnn-benchmarking)
+1. **Project name** — which project (TheRock, rocm-libraries, mlse-tools)
 2. **Branch** — the git branch to check out in the worktree
 3. **Worktree name** — short name for the worktree directory
+
+Benchmarking requests, including `dnn-benchmarking`, use the rocm-libraries project.
 
 ## Project Paths
 
@@ -38,7 +40,6 @@ The prompt provides:
 | TheRock | ~/TheRock |
 | rocm-libraries | ~/full/rocm-libraries |
 | mlse-tools | ~/mlse-tools-internal |
-| dnn-benchmarking | ~/tmp/dnn-benchmarking |
 
 ## Worktree Naming Convention
 
@@ -51,7 +52,6 @@ Created at `/home/AMD/sareeder/{prefix}-{name}`:
 | TheRock | `therock` | `/home/AMD/sareeder/therock-feature-x` |
 | rocm-libraries | `rocmlibs` | `/home/AMD/sareeder/rocmlibs-bugfix` |
 | mlse-tools | `mlse` | `/home/AMD/sareeder/mlse-experiment` |
-| dnn-benchmarking | `dnnbench` | `/home/AMD/sareeder/dnnbench-baseline` |
 
 ### Orchestrated worktrees
 
@@ -83,7 +83,7 @@ git worktree add /home/AMD/sareeder/<prefix>-<name> -b <local-branch-name> <remo
 
 ### Step 3: Environment setup
 
-**For Python projects** (TheRock, mlse-tools, dnn-benchmarking) — if a `requirements.txt` exists:
+**For Python projects** (TheRock, mlse-tools) — if a `requirements.txt` exists:
 ```bash
 cd <worktree-path>
 python3 -m venv .venv

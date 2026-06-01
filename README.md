@@ -15,9 +15,8 @@ This workspace acts as a dispatch hub that automatically:
 | Project | Location | Type |
 |---------|----------|------|
 | **TheRock** | `~/TheRock` | CMake superbuild (hipDNN, MIOpen, ROCm stack) |
-| **rocm-libraries** | `~/full/rocm-libraries` | CMake superbuild (23 library projects) |
+| **rocm-libraries** | `~/full/rocm-libraries` | CMake superbuild (library projects and benchmarking) |
 | **mlse-tools-internal** | `~/mlse-tools-internal` | Python automation scripts |
-| **dnn-benchmarking** | `~/dnn-benchmarking` | Python benchmarking package |
 
 ## Local Clone Bootstrap
 
@@ -68,16 +67,15 @@ Just mention the project, library, or worktree in your prompt:
 → Routes to therock-consumption, uses correct build dir
 
 "Add a benchmark test for batchnorm"
-→ Routes to dnn-benchmarking, activates venv
+→ Routes to rocm-libraries benchmarking
 ```
 
 **Detection keywords:**
 - **TheRock**: therock, rock, superbuild, component names
 - **consumption worktree**: consumption, hipdnn-consumption
 - **miopen-plugin worktree**: miopen-plugin, plugin-move
-- **rocm-libraries**: libs, hipdnn, miopen-provider, projects/
+- **rocm-libraries**: libs, hipdnn, miopen-provider, projects/, benchmark, bench, --graph, perf
 - **mlse-tools**: mlse, alola, kubernetes, promote
-- **dnn-benchmarking**: benchmark, bench, --graph, perf
 
 ### Option 2: Explicit Commands
 

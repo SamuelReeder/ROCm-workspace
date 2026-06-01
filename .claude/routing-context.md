@@ -14,9 +14,8 @@ Verify paths with `test -d` before accessing — SSH may be needed.
 
 ## Projects
 - **TheRock** (rock, therock, hip, rocm-build, superbuild) — `/home/AMD/sareeder/TheRock`
-- **rocm-libraries** (libs, rocmlibs, libraries, hipdnn, miopen-provider, hipblaslt-provider) — `/home/AMD/sareeder/full/rocm-libraries`
+- **rocm-libraries** (libs, rocmlibs, libraries, hipdnn, miopen-provider, hipblaslt-provider, dnn-benchmarking, bench, benchmark, dnn-bench, perf, benchmarking) — `/home/AMD/sareeder/full/rocm-libraries`
 - **mlse-tools-internal** (mlse, tools, automation, alola, slurm, kubernetes, staging, promote) — `/home/AMD/sareeder/mlse-tools-internal`
-- **dnn-benchmarking** (bench, benchmark, dnn-bench, perf, benchmarking) — `/home/AMD/sareeder/dnn-benchmarking`
 - **cudnn-frontend** (cudnn, cudnn-fe, frontend) — `/home/AMD/sareeder/cudnn-frontend`
 
 ## Machines

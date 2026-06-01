@@ -7,7 +7,6 @@
   "base_branches": {
     "therock": "main",
     "rocm-libraries": "develop",
-    "mlse-tools": "main",
-    "dnn-benchmarking": "main"
+    "mlse-tools": "main"
   }
 }

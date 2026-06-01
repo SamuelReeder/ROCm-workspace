@@ -6,7 +6,7 @@ Reference documentation for the ROCm workspace. These are tier-4 docs — never 
 
 | Document | Description |
 |----------|-------------|
-| [Python Style Guide](python-style-guide.md) | Coding standards for Python projects (mlse-tools, dnn-benchmarking, TheRock scripts) |
+| [Python Style Guide](python-style-guide.md) | Coding standards for Python projects (mlse-tools and TheRock scripts) |
 
 ## Conventions
 
