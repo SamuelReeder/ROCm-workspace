@@ -31,7 +31,7 @@ The prompt provides:
 2. **Branch** — the git branch to check out in the worktree
 3. **Worktree name** — short name for the worktree directory
 
-Benchmarking requests, including `dnn-benchmarking`, use the rocm-libraries project.
+Benchmarking requests, including `dnn-benchmarking`, use the rocm-libraries project; dnn-benchmarking is included there alongside hipDNN.
 
 ## Project Paths
 
