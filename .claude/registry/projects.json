@@ -136,7 +136,7 @@
       "buildDir": null,
       "remote": "git@github.com:ROCm/mlse-tools-internal.git",
       "worktrees": {},
-      "aliases": ["mlse", "tools", "automation", "alola", "slurm", "kubernetes", "staging", "promote"]
+      "aliases": ["mlse", "tools", "automation", "slurm", "kubernetes", "staging", "promote"]
     },
     "cudnn-frontend": {
       "name": "cudnn-frontend",

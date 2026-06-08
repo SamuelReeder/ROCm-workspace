@@ -1,13 +1,3 @@
 {
-  "machines": {
-    "alola": {
-      "name": "Alola Cluster",
-      "hostPattern": "ctr2-alola-login-*",
-      "nodes": ["03", "04"],
-      "user": "sareeder",
-      "sshScript": "scripts/ssh/ssh-alola.sh",
-      "detectScript": "scripts/ssh/detect-env.sh",
-      "context": "docs/machines/alola.md"
-    }
-  }
+  "machines": {}
 }

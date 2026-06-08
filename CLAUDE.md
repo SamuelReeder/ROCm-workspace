@@ -1,6 +1,6 @@
 # ROCm Workspace Hub
 
-Central dispatch workspace for ROCm development projects. Agents normally run on the HPE controller host/container; ROCm build, test, benchmark, and GPU runtime work is routed through durable Alola sessions.
+Central dispatch workspace for ROCm development projects. This repo owns project/worktree discovery and local workspace conventions; deployment-specific remote execution routing lives outside this repo.
 
 ## Source of Truth
 
@@ -10,32 +10,18 @@ Central dispatch workspace for ROCm development projects. Agents normally run on
 - Agents → `.shared/agents/*.md` (symlinked into `.claude/agents/` and `.codex/agents/`)
 - Skills → `.shared/skills/*/` (symlinked into `.claude/skills/` and `.codex/skills/`)
 - Task tracking → beads_rust (`br`) in `.beads/`
-- Alola details → `docs/machines/alola.md`
 
 ## Default Agent Execution
 
-- Stay local to the HPE/controller host for orchestration, editing, git, GitHub, and Teams replies.
-- Do not run ROCm builds/tests/benchmarks directly on HPE.
-- For ROCm build/test/runtime work, run commands through:
-
-```bash
-workspace/scripts/alola-session run -- <command>
-```
-
-- The default Alola target is login node `03`, ASIC `gfx90a`, in the login enroot container `sareeder-latest_container`.
-- Alola home/project paths and images are shared, but login-node enroot rootfses are node-local under `/var/tmp/<uid>/enroot-data`. If `enroot list` is empty on a login node, recreate the named rootfs from `/cluster/images/hipdnn` rather than assuming project storage is missing.
-- Explicit GPU targets allocate a compute node through SLURM, for example:
-
-```bash
-workspace/scripts/alola-session run --target gfx942 -- <command>
-```
-
-This uses the configured `MARKHAM&GFX942` constraint and `/cluster/images/hipdnn/hipdnn_latest_gfx942.sqsh`.
+- Stay local to the controller host/container for orchestration, editing, git, GitHub, and Teams replies.
+- Use this workspace for source checkout discovery and local file operations only.
+- Do not rely on workspace-owned SSH wrappers or remote-execution scripts; if a deployment provides remote execution, follow the runtime instructions injected by that deployment.
 
 ## Workspace Setup
 
 - New-machine clones live under gitignored `repos/<project>/`.
-- Temporary/local worktrees live under gitignored `worktrees/<project>/<name>/`.
+- Workspace-local worktrees live under gitignored `worktrees/<project>/<name>/`.
+- In container deployments, `/app/workspace/repos` and `/app/workspace/worktrees` are durable Docker volumes, not temporary scratch paths.
 - Bootstrap clones shallow default-branch repositories and reuses existing registry checkouts as Git object references; use `--full-history` for complete history and `--submodules` only when recursive submodule checkout is needed.
 - Bootstrap all registry repos:
 
@@ -48,6 +34,7 @@ python3 scripts/bootstrap_repos.py
 ```bash
 python3 scripts/bootstrap_repos.py --project rocm-libraries --worktree rocm-libraries <name> <branch>
 ```
+- When verification requires a remote or specialized runtime, use the deployment-provided routing instructions for that runtime rather than workspace-local scripts.
 
 ## Workflow Principles
 

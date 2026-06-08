@@ -75,7 +75,7 @@ Just mention the project, library, or worktree in your prompt:
 - **consumption worktree**: consumption, hipdnn-consumption
 - **miopen-plugin worktree**: miopen-plugin, plugin-move
 - **rocm-libraries**: libs, hipdnn, miopen-provider, projects/, benchmark, bench, --graph, perf
-- **mlse-tools**: mlse, alola, kubernetes, promote
+- **mlse-tools**: mlse, kubernetes, promote
 
 ### Option 2: Explicit Commands
 
