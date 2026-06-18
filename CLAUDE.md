@@ -51,4 +51,3 @@ python3 scripts/bootstrap_repos.py --project rocm-libraries --worktree rocm-libr
 3. Each worktree keeps its own `build/` and `.venv`.
 4. Before creating a fresh worktree from a moving base branch, fetch the source clone first.
 5. Beads commands require `source "$HOME/.cargo/env"` first.
-6. No Jira/project IDs in commit messages, PR titles, PR bodies, or branch names.
