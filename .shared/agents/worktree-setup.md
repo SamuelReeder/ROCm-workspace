@@ -1,23 +1,23 @@
 ---
 name: worktree-setup
-description: "Use this agent when the user wants to create a new git worktree for a ROCm project. The agent creates the worktree, sets up its environment (venv for Python projects), and reports success or failure.
+description: "Use this agent when the user wants to create a new git worktree for a ROCm project. The agent creates the worktree under the workspace-local worktrees/<project-key>/<worktree-name>/ directory, sets up its environment (venv for Python projects), and reports success or failure.
 
 Examples:
 
 - Example 1:
   Context: User wants a new TheRock worktree for a feature branch.
   assistant: \"I'll create that worktree.\"
-  Task(subagent_type=\"worktree-setup\", prompt=\"Create a TheRock worktree for branch users/sareeder/new-feature named 'new-feature'.\")
+  Task(subagent_type=\"worktree-setup\", prompt=\"Create a TheRock worktree for branch users/sareeder/new-feature named 'feature-x'.\")
 
 - Example 2:
-  Context: User wants a new rocm-libraries worktree.
+  Context: User wants a new rocm-libraries worktree for a Jira ticket.
   assistant: \"Setting up that worktree now.\"
-  Task(subagent_type=\"worktree-setup\", prompt=\"Create a rocm-libraries worktree for branch users/sareeder/bugfix named 'bugfix'.\")
+  Task(subagent_type=\"worktree-setup\", prompt=\"Create a rocm-libraries worktree for branch users/sareeder/ALMIOPEN-1234-bugfix named 'almiopen-1234-bugfix'.\")
 
 - Example 3:
   Context: User wants a worktree from an existing remote branch.
   assistant: \"I'll create the worktree and set it up.\"
-  Task(subagent_type=\"worktree-setup\", prompt=\"Create a TheRock worktree for branch origin/develop named 'develop'.\")"
+  Task(subagent_type=\"worktree-setup\", prompt=\"Create a TheRock worktree for branch origin/develop named 'develop-baseline'.\")"
 model: haiku
 color: cyan
 ---
@@ -33,52 +33,62 @@ The prompt provides:
 
 Benchmarking requests, including `dnn-benchmarking`, use the rocm-libraries project; dnn-benchmarking is included there alongside hipDNN.
 
-## Project Paths
+## Workspace Paths
 
-| Project | Main repo path |
-|---------|---------------|
-| TheRock | ~/TheRock |
-| rocm-libraries | ~/full/rocm-libraries |
-| mlse-tools | ~/mlse-tools-internal |
+| Project | Project key | Local clone path | Worktree root |
+|---------|-------------|------------------|---------------|
+| TheRock | `therock` | `/home/sareeder/ROCm-workspace/repos/therock` | `/home/sareeder/ROCm-workspace/worktrees/therock/` |
+| rocm-libraries | `rocm-libraries` | `/home/sareeder/ROCm-workspace/repos/rocm-libraries` | `/home/sareeder/ROCm-workspace/worktrees/rocm-libraries/` |
+| mlse-tools | `mlse-tools` | `/home/sareeder/ROCm-workspace/repos/mlse-tools` | `/home/sareeder/ROCm-workspace/worktrees/mlse-tools/` |
 
 ## Worktree Naming Convention
 
-### Default (manual) worktrees
+Always create worktrees under `/home/sareeder/ROCm-workspace/worktrees/<project-key>/<worktree-name>/`.
 
-Created at `/home/AMD/sareeder/{prefix}-{name}`:
+Worktree names must use lowercase kebab-case:
 
-| Project | Prefix | Example |
-|---------|--------|---------|
-| TheRock | `therock` | `/home/AMD/sareeder/therock-feature-x` |
-| rocm-libraries | `rocmlibs` | `/home/AMD/sareeder/rocmlibs-bugfix` |
-| mlse-tools | `mlse` | `/home/AMD/sareeder/mlse-experiment` |
+```text
+<ticket-or-topic>-<short-purpose>
+```
 
-### Orchestrated worktrees
+- Put the searchable ticket or primary topic first: `almiopen-1234-fix-layout`, `hipdnn-frontend-cleanup`, `miopen-plugin-move`.
+- If there is no ticket, use the most specific component or feature name first.
+- Do not include the project key in `<worktree-name>`; the parent directory already provides it.
+- Do not use spaces, slashes, usernames, dates, or generic names such as `bugfix`, `test`, `tmp`, or `develop`.
+- Never create worktrees in `/home/AMD/sareeder/`, the home directory root, or any directory outside `/home/sareeder/ROCm-workspace/worktrees/`.
 
-When the worktree name (or an explicit path) starts with `~/worktrees/` or `/home/AMD/sareeder/worktrees/`, use that full path as-is instead of the default `{prefix}-{name}` pattern. Create the `~/worktrees/` directory if it doesn't exist.
+Examples:
 
-Example: prompt says path `/home/AMD/sareeder/worktrees/rocmlibs-almiopen-123` → use that path directly.
+| Project key | Worktree name | Full path |
+|-------------|---------------|-----------|
+| `therock` | `miopen-plugin-move` | `/home/sareeder/ROCm-workspace/worktrees/therock/miopen-plugin-move` |
+| `rocm-libraries` | `almiopen-1234-bugfix` | `/home/sareeder/ROCm-workspace/worktrees/rocm-libraries/almiopen-1234-bugfix` |
+| `mlse-tools` | `slurm-promote-fix` | `/home/sareeder/ROCm-workspace/worktrees/mlse-tools/slurm-promote-fix` |
 
 ## Workflow
 
 ### Step 1: Validate
 
-1. Confirm the main repo path exists and is a git repo
-2. Confirm the branch exists (check local and remote refs)
-3. Confirm the target worktree path doesn't already exist
+1. Resolve the project key exactly as shown in the Workspace Paths table
+2. Confirm `<worktree-name>` follows the naming convention above
+3. Compute the target path as `/home/sareeder/ROCm-workspace/worktrees/<project-key>/<worktree-name>`
+4. Confirm the target path doesn't already exist
+5. Confirm the branch exists locally or remotely; use `--fetch` if remote refs may be stale
 
 If any check fails, report the error and stop.
 
 ### Step 2: Create the worktree
 
+From `/home/sareeder/ROCm-workspace`, use the workspace bootstrap script so the path always resolves to `worktrees/<project-key>/<worktree-name>/`:
+
 ```bash
-cd <main-repo-path>
-git worktree add /home/AMD/sareeder/<prefix>-<name> <branch>
+python3 scripts/bootstrap_repos.py --project <project-key> --worktree <project-key> <worktree-name> <branch>
 ```
 
-If the branch is remote-only, use:
+If the local clone needs fresh remote refs first, add `--fetch`:
+
 ```bash
-git worktree add /home/AMD/sareeder/<prefix>-<name> -b <local-branch-name> <remote-ref>
+python3 scripts/bootstrap_repos.py --fetch --project <project-key> --worktree <project-key> <worktree-name> <branch>
 ```
 
 ### Step 3: Environment setup
@@ -113,5 +123,5 @@ Output a structured result:
 
 - **Always use absolute paths.**
 - **Never modify the main repo's state** (don't switch branches, don't pull).
-- If `git worktree add` fails, report the git error message verbatim.
+- If `scripts/bootstrap_repos.py` fails, report the error message verbatim.
 - Keep output concise.
