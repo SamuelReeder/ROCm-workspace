@@ -123,10 +123,24 @@
         "test-dedup": {
           "path": "/home/AMD/sareeder/worktrees/rocmlibs-test-dedup",
           "branch": "users/sareeder/test-deduplication"
+        },
+        "conv-bwd-explicit-output-dims": {
+          "path": "/home/sareeder/ROCm-workspace/worktrees/rocm-libraries/conv-bwd-explicit-output-dims",
+          "branch": "users/bharriso/hipdnn-conv-bwd-explicit-output-dims"
         }
       },
-      "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider", "dnn-benchmarking", "bench", "benchmark", "dnn-bench", "perf", "benchmarking"],
+      "aliases": ["libs", "rocmlibs", "libraries", "hipdnn", "miopen-provider", "hipblaslt-provider"],
       "subprojects": ["composablekernel", "dnn-benchmarking", "hipblas", "hipblaslt", "hipcub", "hipdnn", "hipfft", "hiprand", "hipsolver", "hipsparse", "hipsparselt", "hiptensor", "miopen", "rocblas", "rocfft", "rocprim", "rocrand", "rocsolver", "rocsparse", "rocthrust", "rocwmma"]
+    },
+    "dnn-benchmarking": {
+      "name": "dnn-benchmarking",
+      "path": "/home/sareeder/ROCm-workspace/repos/dnn-benchmarking",
+      "type": "python",
+      "venv": ".venv",
+      "buildDir": null,
+      "remote": "git@github.com:ROCm/dnn-benchmarking.git",
+      "worktrees": {},
+      "aliases": ["dnn-benchmark", "bench", "benchmark", "dnn-bench", "perf", "benchmarking"]
     },
     "mlse-tools": {
       "name": "mlse-tools-internal",
