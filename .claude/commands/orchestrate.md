@@ -37,18 +37,11 @@ Read the mapping config:
 Read: .claude/skills/orchestrate/jira-mapping.json
 ```
 
-Read the project registry:
-```
-Read: .claude/registry/projects.json
-```
-
-Match the Jira task to a ROCm project using this priority:
-1. **Jira components** → match against `projects.json` `components` and `subprojects` lists
-2. **Jira labels** → match against project keys and `aliases` in `projects.json`
-3. **Jira project key** → look up in `jira-mapping.json` `project_key_map`
-4. **Ambiguous** → use `AskUserQuestion` to let the user pick the target project
-
-Also determine the base branch from `jira-mapping.json` `base_branches`.
+Resolve the Jira project key through `project_key_map`, then confirm the
+mapped repository directory exists under `repos/`. Use the mapped
+`base_branches` entry for the base branch. If the mapping is absent or the
+repository is missing, ask the user to select an existing repository under
+`repos/`.
 
 ---
 
@@ -89,16 +82,18 @@ Store the beads task ID for subsequent phases.
    git -C <main-repo-path> branch <branch-name> origin/<base-branch>
    ```
 
-4. **Spawn worktree subagent** using a `general-purpose` haiku agent with worktree-setup instructions:
+4. **Spawn worktree subagent** using the worktree-setup instructions:
    ```
    1. Read .claude/agents/worktree-setup.md
    2. Extract the body (everything after the YAML frontmatter closing ---)
-   3. Append task details: "Create a <project> worktree for branch <branch-name> at path /home/AMD/sareeder/worktrees/<prefix>-<jira-key-lowercase>"
+   3. Append task details: "Create a <project> worktree for branch <branch-name>"
    4. Task(subagent_type="general-purpose", prompt=<agent body + task details>, model="haiku", mode="bypassPermissions")
    ```
-   The worktree path uses `~/worktrees/` to keep orchestrated worktrees separate.
+   The worktree path is derived as
+   `worktrees/<project>/<branch-suffix>/`, where the suffix follows
+   `users/sareeder/` in the branch name.
 
-5. **Update projects.json** with the new worktree entry.
+5. **Record the worktree path in the beads task**:
 
 6. **Update beads task**:
    ```bash

@@ -23,15 +23,15 @@ Interpret them the same way as the Claude command:
 - Strip any `--branch <branch>` pair from the argument list before positional parsing.
 - If `--branch` is provided without a value, stop with a short error.
 - If more than one mode flag is provided, treat that as invalid input and stop with a short error.
-- If 2 arguments are given, treat the 2nd as `worktree` only if it matches a worktree key in the resolved project; otherwise treat it as `base-branch`.
+- If 2 arguments are given, treat the 2nd as a worktree directory under `worktrees/<project>/` only if that directory exists; otherwise treat it as a base branch.
 - If no arguments are given, infer from in-progress tasks via `source "$HOME/.cargo/env" && br list --json` or from conversation context.
-- Default `worktree` to `main`.
+- Default `worktree` to the current checkout or the repository's main checkout.
 - Default review mode to `auto`.
 - Support reviewing a fetched remote branch directly via `--branch <branch>` even when no local worktree exists for that branch.
 
 ## Workflow
 
-1. Resolve the project and worktree from `/home/AMD/sareeder/ROCm-workspace/.claude/registry/projects.json`.
+1. Resolve the project from `repos/<project>/` and resolve a worktree by inspecting `worktrees/<project>/` or `git worktree list`.
 2. Resolve the current branch, any configured upstream, and any explicit branch target:
 
    ```bash

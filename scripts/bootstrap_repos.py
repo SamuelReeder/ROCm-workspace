@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
-"""Bootstrap ROCm workspace repositories and local worktree roots.
+"""Manage workspace-local repositories and branch-derived git worktrees.
 
-The workspace registry remains the source of truth for project names and remotes.
-This script clones those remotes into ignored workspace-local directories:
-
-  repos/<project-key>/
-  worktrees/<project-key>/<worktree-name>/
-
-It intentionally does not rewrite registry paths. Existing machines may still use
-pre-existing absolute checkouts; this is a portable bootstrap path for new hosts.
+Repositories are discovered from immediate directories under ``repos/``.  The
+repository directory name is the project key; no workspace registry is needed.
+Worktrees are created under ``worktrees/<project>/<branch-suffix>/`` using the
+suffix after the required ``users/sareeder/`` branch prefix.
 """
 
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import shlex
 import subprocess
@@ -24,20 +19,18 @@ from pathlib import Path
 from typing import Iterable, Mapping, Sequence
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_REGISTRY = WORKSPACE_ROOT / ".claude" / "registry" / "projects.json"
 DEFAULT_REPOS_DIR = WORKSPACE_ROOT / "repos"
 DEFAULT_WORKTREES_DIR = WORKSPACE_ROOT / "worktrees"
-DEFAULT_CLONE_DEPTH = "1"
 SAFE_WORKTREE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+BRANCH_PREFIX = "users/sareeder/"
 
 
 @dataclass(frozen=True)
 class Project:
+    """A repository discovered under the workspace repos directory."""
+
     key: str
-    name: str
-    remote: str
-    path: Path | None
-    aliases: tuple[str, ...]
+    path: Path
 
 
 class BootstrapError(RuntimeError):
@@ -84,77 +77,6 @@ def ensure_dir(path: Path, *, dry_run: bool) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def load_projects(registry_path: Path) -> dict[str, Project]:
-    try:
-        data = json.loads(registry_path.read_text())
-    except FileNotFoundError as exc:
-        raise BootstrapError(f"Registry not found: {registry_path}") from exc
-    except json.JSONDecodeError as exc:
-        raise BootstrapError(f"Invalid registry JSON in {registry_path}: {exc}") from exc
-
-    raw_projects = data.get("projects")
-    if not isinstance(raw_projects, dict):
-        raise BootstrapError(f"Registry {registry_path} does not contain a projects object")
-
-    projects: dict[str, Project] = {}
-    for key, raw in raw_projects.items():
-        if not isinstance(raw, dict):
-            continue
-        remote = str(raw.get("remote") or "").strip()
-        if not remote:
-            continue
-        aliases = tuple(str(alias).lower() for alias in raw.get("aliases", []) if str(alias).strip())
-        source_path = Path(str(raw.get("path")).replace("~", str(Path.home()), 1)).expanduser() if raw.get("path") else None
-        projects[key] = Project(
-            key=key,
-            name=str(raw.get("name") or key),
-            remote=remote,
-            path=source_path,
-            aliases=aliases,
-        )
-    if not projects:
-        raise BootstrapError(f"Registry {registry_path} contains no projects with remotes")
-    return projects
-
-
-def resolve_project(projects: Mapping[str, Project], selector: str) -> Project:
-    needle = selector.strip().lower()
-    for project in projects.values():
-        if needle in {project.key.lower(), project.name.lower(), *project.aliases}:
-            return project
-    known = ", ".join(sorted(projects))
-    raise BootstrapError(f"Unknown project '{selector}'. Known projects: {known}")
-
-
-def select_projects(projects: Mapping[str, Project], selectors: Iterable[str]) -> list[Project]:
-    selected: dict[str, Project] = {}
-    for selector in selectors:
-        project = resolve_project(projects, selector)
-        selected[project.key] = project
-    return list(selected.values())
-
-
-def repo_path(repos_dir: Path, project: Project) -> Path:
-    return repos_dir / project.key
-
-
-def worktree_path(worktrees_dir: Path, project: Project, name: str) -> Path:
-    if not SAFE_WORKTREE_NAME.fullmatch(name):
-        raise BootstrapError(
-            f"Invalid worktree name '{name}'. Use only letters, numbers, dots, underscores, and dashes; do not include slashes."
-        )
-    return worktrees_dir / project.key / name
-
-
-def clone_command(project: Project, destination: Path, *, full_history: bool) -> list[str]:
-    command = ["git", "clone"]
-    if not full_history:
-        command.extend(["--depth", DEFAULT_CLONE_DEPTH])
-    if project.path and project.path.resolve() != destination.resolve() and project.path.exists():
-        command.extend(["--reference-if-able", str(project.path)])
-    command.extend([project.remote, str(destination)])
-    return command
-
 def is_git_worktree(path: Path, *, dry_run: bool) -> bool:
     if dry_run:
         return path.exists()
@@ -170,48 +92,79 @@ def is_git_worktree(path: Path, *, dry_run: bool) -> bool:
         return False
 
 
-def ensure_project_clone(
-    project: Project,
-    repos_dir: Path,
-    *,
-    dry_run: bool,
-    fetch: bool,
-    submodules: bool,
-    full_history: bool,
-) -> Path:
-    destination = repo_path(repos_dir, project)
-    ensure_dir(repos_dir, dry_run=dry_run)
+def discover_projects(repos_dir: Path, *, dry_run: bool = False) -> dict[str, Project]:
+    """Discover immediate git repository directories under ``repos_dir``."""
+    if not repos_dir.exists():
+        return {}
+    projects: dict[str, Project] = {}
+    for candidate in sorted(repos_dir.iterdir(), key=lambda item: item.name.lower()):
+        if candidate.is_dir() and is_git_worktree(candidate, dry_run=dry_run):
+            projects[candidate.name] = Project(key=candidate.name, path=candidate)
+    return projects
 
-    if not destination.exists():
-        run(clone_command(project, destination, full_history=full_history), dry_run=dry_run)
-        if submodules:
-            run(["git", "-C", str(destination), "submodule", "update", "--init", "--recursive"], dry_run=dry_run)
-        return destination
 
-    if not is_git_worktree(destination, dry_run=dry_run):
-        raise BootstrapError(f"{destination} exists but is not a git checkout")
+def resolve_project(projects: Mapping[str, Project], selector: str) -> Project:
+    needle = selector.strip().lower()
+    for project in projects.values():
+        if needle == project.key.lower():
+            return project
+    known = ", ".join(sorted(projects)) or "none"
+    raise BootstrapError(f"Unknown repository '{selector}'. Repositories under repos/: {known}")
 
-    if not dry_run:
-        origin = run(["git", "-C", str(destination), "remote", "get-url", "origin"], dry_run=False, capture=True)
-        if origin != project.remote:
-            raise BootstrapError(
-                f"{destination} origin is {origin!r}, expected {project.remote!r}. Move it aside or fix the remote before bootstrapping."
-            )
 
-    if fetch:
-        run(["git", "-C", str(destination), "fetch", "--all", "--prune", "--tags"], dry_run=dry_run)
-        if submodules:
-            run(["git", "-C", str(destination), "submodule", "update", "--init", "--recursive"], dry_run=dry_run)
-    else:
-        print(f"= {destination} already exists; skipping fetch")
-    return destination
+def select_projects(projects: Mapping[str, Project], selectors: Iterable[str]) -> list[Project]:
+    selected: dict[str, Project] = {}
+    for selector in selectors:
+        project = resolve_project(projects, selector)
+        selected[project.key] = project
+    return list(selected.values())
+
+
+def branch_to_worktree_name(branch: str) -> str:
+    """Return the canonical suffix directory name for a user branch.
+
+    Workspace branches always use ``users/sareeder/``.  The prefix is omitted
+    from the worktree directory; remaining path separators become ``--``.
+    """
+    value = branch.strip()
+    for prefix in ("refs/heads/", "refs/remotes/"):
+        if value.startswith(prefix):
+            value = value[len(prefix) :]
+            break
+    if value.startswith("origin/"):
+        value = value[len("origin/") :]
+    if not value.startswith(BRANCH_PREFIX):
+        raise BootstrapError(f"Branch must use the '{BRANCH_PREFIX}' prefix: {branch!r}")
+    suffix = value[len(BRANCH_PREFIX) :]
+    if not suffix:
+        raise BootstrapError(f"Branch must include a name after '{BRANCH_PREFIX}'")
+    name = suffix.replace("/", "--")
+    name = re.sub(r"[^A-Za-z0-9._-]", "-", name)
+    name = name.strip(".-")
+    if not name:
+        raise BootstrapError(f"Branch '{branch}' does not produce a valid worktree name")
+    if not name[0].isalnum():
+        name = "branch-" + name
+    if not SAFE_WORKTREE_NAME.fullmatch(name):
+        raise BootstrapError(f"Branch '{branch}' produces invalid worktree name '{name}'")
+    return name
+
+
+
+
+def worktree_path(worktrees_dir: Path, project: Project, branch: str) -> Path:
+    return worktrees_dir / project.key / branch_to_worktree_name(branch)
+
+
+def ensure_repo(project: Project, *, dry_run: bool) -> Path:
+    if not is_git_worktree(project.path, dry_run=dry_run):
+        raise BootstrapError(f"{project.path} is not a git checkout")
+    return project.path
 
 
 def ensure_worktree(
     project: Project,
-    name: str,
     branch: str,
-    repos_dir: Path,
     worktrees_dir: Path,
     *,
     dry_run: bool,
@@ -219,8 +172,8 @@ def ensure_worktree(
     main_repo: Path | None = None,
 ) -> Path:
     if main_repo is None:
-        main_repo = ensure_project_clone(project, repos_dir, dry_run=dry_run, fetch=fetch, submodules=False, full_history=False)
-    destination = worktree_path(worktrees_dir, project, name)
+        main_repo = ensure_repo(project, dry_run=dry_run)
+    destination = worktree_path(worktrees_dir, project, branch)
     ensure_dir(destination.parent, dry_run=dry_run)
 
     if destination.exists():
@@ -237,19 +190,13 @@ def ensure_worktree(
 
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Clone registry projects into workspace/repos and create workspace-local worktrees."
-    )
-    parser.add_argument(
-        "--registry",
-        type=Path,
-        default=DEFAULT_REGISTRY,
-        help=f"project registry JSON (default: {DEFAULT_REGISTRY})",
+        description="Discover repositories under repos/ and create branch-derived worktrees."
     )
     parser.add_argument(
         "--repos-dir",
         type=Path,
         default=DEFAULT_REPOS_DIR,
-        help=f"clone destination root (default: {DEFAULT_REPOS_DIR})",
+        help=f"repository directory (default: {DEFAULT_REPOS_DIR})",
     )
     parser.add_argument(
         "--worktrees-dir",
@@ -261,30 +208,25 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         "--project",
         action="append",
         default=[],
-        help="project key/name/alias to clone; repeatable. Defaults to all registry projects unless only --worktree is used.",
+        help="repository directory name to use; repeatable. Defaults to all repositories.",
     )
     parser.add_argument(
         "--worktree",
-        nargs=3,
+        nargs=2,
         action="append",
-        metavar=("PROJECT", "NAME", "BRANCH"),
+        metavar=("PROJECT", "BRANCH"),
         default=[],
-        help="create worktrees/<project>/<name> from BRANCH; repeatable",
+        help="create a branch-derived worktree for PROJECT and BRANCH; repeatable",
     )
     parser.add_argument(
         "--fetch",
         action="store_true",
-        help="fetch existing clones. Worktree creation fetches unless --no-fetch is set.",
+        help="fetch selected repositories before processing",
     )
     parser.add_argument(
         "--submodules",
         action="store_true",
-        help="after cloning/fetching a repo, initialize and update its submodules recursively",
-    )
-    parser.add_argument(
-        "--full-history",
-        action="store_true",
-        help="clone complete history instead of the default shallow all-branch clone",
+        help="initialize and update selected repositories' submodules recursively",
     )
     parser.add_argument(
         "--no-fetch",
@@ -294,7 +236,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="print the git commands without creating directories or cloning",
+        help="print git commands without changing directories or worktrees",
     )
     return parser.parse_args(argv)
 
@@ -304,51 +246,46 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.fetch and args.no_fetch:
         raise BootstrapError("Use either --fetch or --no-fetch, not both")
 
-    registry = args.registry.resolve()
     repos_dir = args.repos_dir.resolve()
     worktrees_dir = args.worktrees_dir.resolve()
-    projects = load_projects(registry)
+    projects = discover_projects(repos_dir, dry_run=args.dry_run)
+    if not projects:
+        raise BootstrapError(f"No git repositories found under {repos_dir}")
 
     requested = list(args.project)
-    for project_name, _name, _branch in args.worktree:
+    for project_name, _branch in args.worktree:
         requested.append(project_name)
+    selected = select_projects(projects, requested) if requested else list(projects.values())
+    selected_by_key = {project.key: project for project in selected}
 
-    clone_targets = select_projects(projects, requested) if requested else list(projects.values())
-    fetch_existing_clones = bool(args.fetch)
-    worktree_fetch = not args.no_fetch
+    print(f"Workspace:  {WORKSPACE_ROOT}")
+    print(f"Worktrees:  {worktrees_dir}")
+    print("Repositories:")
+    for project in selected:
+        print(f"  {project.key}: {project.path}")
 
-    print(f"Workspace: {WORKSPACE_ROOT}")
-    print(f"Registry:  {registry}")
-    print(f"Repos:     {repos_dir}")
-    print(f"Worktrees: {worktrees_dir}")
-
-    cloned: list[Path] = []
-    prepared_repos: dict[str, Path] = {}
-    for project in clone_targets:
-        cloned_path = ensure_project_clone(project, repos_dir, dry_run=args.dry_run, fetch=fetch_existing_clones, submodules=args.submodules, full_history=args.full_history)
-        cloned.append(cloned_path)
-        prepared_repos[project.key] = cloned_path
+    for project in selected:
+        if args.fetch:
+            run(["git", "-C", str(project.path), "fetch", "--all", "--prune", "--tags"], dry_run=args.dry_run)
+        if args.submodules:
+            run(["git", "-C", str(project.path), "submodule", "update", "--init", "--recursive"], dry_run=args.dry_run)
 
     created_worktrees: list[Path] = []
-    for project_name, name, branch in args.worktree:
-        project = resolve_project(projects, project_name)
+    for project_name, branch in args.worktree:
+        project = selected_by_key[resolve_project(projects, project_name).key]
         created_worktrees.append(
             ensure_worktree(
                 project,
-                name,
                 branch,
-                repos_dir,
                 worktrees_dir,
                 dry_run=args.dry_run,
-                fetch=worktree_fetch,
-                main_repo=prepared_repos.get(project.key),
+                fetch=not args.no_fetch and not args.fetch,
+                main_repo=project.path,
             )
         )
 
     print("\nBootstrap summary")
-    print(f"  clone targets: {len(cloned)}")
-    for path in cloned:
-        print(f"    {path}")
+    print(f"  repositories: {len(selected)}")
     print(f"  requested worktrees: {len(created_worktrees)}")
     for path in created_worktrees:
         print(f"    {path}")

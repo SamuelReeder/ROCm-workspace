@@ -13,9 +13,9 @@ Analyze the commit stack and suggest a squash strategy for a clean PR.
 ## Process
 
 1. **Resolve project:**
-   - First argument = project key or alias (resolve via `/home/AMD/sareeder/ROCm-workspace/.claude/registry/projects.json`)
-   - If not provided, check in-progress tasks (`source "$HOME/.cargo/env" && br list --json`) or infer from conversation
-   - Determine the project path (and worktree path if applicable)
+   - First argument = repository directory name under `repos/`.
+   - If not provided, check in-progress tasks (`source "$HOME/.cargo/env" && br list --json`) or infer from conversation.
+   - Determine the path from `repos/<project>` and, when applicable, inspect `worktrees/<project>/` for the branch-derived worktree.
 
 2. **Resolve base branch:**
    - Second argument = base branch (default: `main`)

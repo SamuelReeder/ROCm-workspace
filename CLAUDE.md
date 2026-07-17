@@ -4,12 +4,15 @@ Central dispatch workspace for ROCm development projects. This repo owns project
 
 ## Source of Truth
 
-- Projects, aliases, and long-lived worktrees → `.claude/registry/projects.json`
+- Repository projects → immediate git directories under `repos/<project>/`
+- Workspace-local worktrees → `worktrees/<project>/<branch-suffix>/`
 - Workspace-local clone/worktree bootstrap → `scripts/bootstrap_repos.py`
 - Commands → `.claude/commands/*.md`
 - Agents → `.shared/agents/*.md` (symlinked into `.claude/agents/` and `.codex/agents/`)
 - Skills → `.shared/skills/*/` (symlinked into `.claude/skills/` and `.codex/skills/`)
 - Task tracking → beads_rust (`br`) in `.beads/`
+
+Repository names and worktrees are discovered from the filesystem; do not add project metadata files.
 
 ## Default Agent Execution
 
@@ -19,22 +22,18 @@ Central dispatch workspace for ROCm development projects. This repo owns project
 
 ## Workspace Setup
 
-- New-machine clones live under gitignored `repos/<project>/`.
-- Workspace-local worktrees live under gitignored `worktrees/<project>/<name>/`.
+- Existing clones live under gitignored `repos/<project>/`.
+- Workspace-local worktrees live under gitignored `worktrees/<project>/<branch-suffix>/`.
 - In container deployments, `/app/workspace/repos` and `/app/workspace/worktrees` are durable Docker volumes, not temporary scratch paths.
-- Bootstrap clones shallow default-branch repositories and reuses existing registry checkouts as Git object references; use `--full-history` for complete history and `--submodules` only when recursive submodule checkout is needed.
-- Bootstrap all registry repos:
+- Bootstrap discovers existing git repositories under `repos/`; clone repositories there manually when needed.
+- Workspace worktree branches must use the `users/sareeder/` prefix. The directory uses only the suffix: `users/sareeder/feature-x` becomes `feature-x`.
 
 ```bash
 python3 scripts/bootstrap_repos.py
-```
+python3 scripts/bootstrap_repos.py --project rocm-libraries --worktree rocm-libraries users/sareeder/feature-x
 
-- Create a workspace-local worktree:
-
-```bash
-python3 scripts/bootstrap_repos.py --project rocm-libraries --worktree rocm-libraries <name> <branch>
 ```
-- When verification requires a remote or specialized runtime, use the deployment-provided routing instructions for that runtime rather than workspace-local scripts.
+- When verification requires a remote or specialized runtime, use the deployment-provided routing instructions rather than workspace-local scripts.
 
 ## Workflow Principles
 
@@ -47,7 +46,7 @@ python3 scripts/bootstrap_repos.py --project rocm-libraries --worktree rocm-libr
 ## Key Rules
 
 1. Use absolute paths when operating inside project clones/worktrees.
-2. Read the registry and project docs directly when context is needed.
+2. Discover projects from `repos/` rather than maintaining a project registry.
 3. Each worktree keeps its own `build/` and `.venv`.
 4. Before creating a fresh worktree from a moving base branch, fetch the source clone first.
 5. Beads commands require `source "$HOME/.cargo/env"` first.

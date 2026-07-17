@@ -15,19 +15,19 @@ Perform a comprehensive code review of a branch's changes against its clean merg
 ### 1. Resolve project, worktree, and optional target branch
 
 - Parse `$ARGUMENTS` as optional positional arguments plus optional flags: `[project] [worktree] [base-branch] [--branch <branch>] [--single-agent|--multi-agent|--auto]`
-- Support `--branch <branch>` to review a fetched remote branch directly, even when it is not registered as a local worktree
+- Support `--branch <branch>` to review a fetched remote branch directly, even when it is not checked out locally
 - Strip the mode flag before positional parsing
 - Strip the `--branch <branch>` pair before positional parsing
 - If `--branch` is present without a value, stop with a short error
 - If more than one mode flag is present, stop with a short error
-- Resolve project via registry at `/home/AMD/sareeder/ROCm-workspace/.claude/registry/projects.json`
-- If 2 arguments given, disambiguate the 2nd: if it matches a worktree key in the resolved project → treat as worktree, otherwise → treat as base branch
-- If 3 arguments given: arg1=project, arg2=worktree, arg3=base branch
+- Resolve project as `repos/<project>`; project names are immediate repository directory names
+- Resolve a worktree by inspecting `worktrees/<project>/` or `git -C repos/<project> worktree list`
+- If 2 arguments are given, treat the 2nd as a worktree directory only if it exists; otherwise treat it as a base branch
+- If 3 arguments are given: arg1=project, arg2=worktree, arg3=base branch
 - If no arguments: check in-progress tasks (`source "$HOME/.cargo/env" && br list --json`) or infer from conversation context
-- Default worktree: `main`
-- Default review mode: `auto`
-- If `--branch` is provided without a worktree, use the project's main path as the git context root
-
+- Default worktree to the current checkout or the repository's main checkout
+- Default review mode to `auto`
+- If `--branch` is provided without a worktree, use `repos/<project>` as the git context root
 ### 2. Resolve current branch, upstream, and explicit branch target
 
 - Determine the current branch:

@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import importlib.util
-import json
-import tempfile
 import subprocess
 import sys
+import tempfile
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
@@ -20,89 +19,99 @@ SPEC.loader.exec_module(bootstrap_repos)
 
 
 class BootstrapReposTest(unittest.TestCase):
-    def write_registry(self, root: Path) -> Path:
-        registry = root / ".claude" / "registry" / "projects.json"
-        registry.parent.mkdir(parents=True)
-        registry.write_text(json.dumps({
-            "projects": {
-                "rocm-libraries": {
-                    "name": "rocm-libraries",
-                    "remote": "git@github.com:ROCm/rocm-libraries.git",
-                    "aliases": ["libs", "rocmlibs"],
-                },
-                "therock": {
-                    "name": "TheRock",
-                    "remote": "git@github.com:ROCm/TheRock.git",
-                    "aliases": ["rock"],
-                },
-                "missing-remote": {
-                    "name": "Missing Remote"
-                },
-            }
-        }))
-        return registry
+    def make_repo(self, root: Path, name: str = "rocm-libraries") -> Path:
+        repo = root / "repos" / name
+        repo.mkdir(parents=True)
+        subprocess.run(["git", "init", str(repo)], check=True, stdout=subprocess.DEVNULL)
+        return repo
 
-    def test_load_projects_uses_only_entries_with_remotes(self) -> None:
+    def test_discover_projects_uses_repository_directories(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            registry = self.write_registry(Path(tmp))
-            projects = bootstrap_repos.load_projects(registry)
+            root = Path(tmp)
+            repo = self.make_repo(root)
+            (root / "repos" / "not-a-repo").mkdir()
 
-        self.assertEqual(set(projects), {"rocm-libraries", "therock"})
-        self.assertEqual(projects["rocm-libraries"].remote, "git@github.com:ROCm/rocm-libraries.git")
+            projects = bootstrap_repos.discover_projects(root / "repos")
 
-    def test_resolve_project_accepts_key_name_and_alias(self) -> None:
+        self.assertEqual(set(projects), {"rocm-libraries"})
+        self.assertEqual(projects["rocm-libraries"].path, repo)
+
+    def test_resolve_project_accepts_only_directory_name(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            registry = self.write_registry(Path(tmp))
-            projects = bootstrap_repos.load_projects(registry)
+            repo = self.make_repo(Path(tmp))
+            projects = bootstrap_repos.discover_projects(repo.parent)
 
-        self.assertEqual(bootstrap_repos.resolve_project(projects, "rocm-libraries").key, "rocm-libraries")
-        self.assertEqual(bootstrap_repos.resolve_project(projects, "TheRock").key, "therock")
-        self.assertEqual(bootstrap_repos.resolve_project(projects, "libs").key, "rocm-libraries")
+        self.assertEqual(bootstrap_repos.resolve_project(projects, "rocm-libraries").path, repo)
+        with self.assertRaises(bootstrap_repos.BootstrapError):
+            bootstrap_repos.resolve_project(projects, "libs")
 
-    def test_worktree_path_rejects_path_traversal(self) -> None:
-        project = bootstrap_repos.Project(
-            key="rocm-libraries",
-            name="rocm-libraries",
-            remote="git@github.com:ROCm/rocm-libraries.git",
-            path=None,
-            aliases=(),
-        )
-        base = Path("/tmp/worktrees")
+    def test_branch_name_uses_users_suffix(self) -> None:
         self.assertEqual(
-            bootstrap_repos.worktree_path(base, project, "feature_1.2-3"),
-            base / "rocm-libraries" / "feature_1.2-3",
+            bootstrap_repos.branch_to_worktree_name("users/sareeder/feature-x"),
+            "feature-x",
+        )
+        self.assertEqual(
+            bootstrap_repos.branch_to_worktree_name("origin/users/sareeder/jira/fix-layout"),
+            "jira--fix-layout",
+        )
+        self.assertEqual(
+            bootstrap_repos.branch_to_worktree_name("refs/heads/users/sareeder/feature_x"),
+            "feature_x",
         )
         with self.assertRaises(bootstrap_repos.BootstrapError):
-            bootstrap_repos.worktree_path(base, project, "../escape")
+            bootstrap_repos.branch_to_worktree_name("feature-x")
 
-    def test_is_git_worktree_rejects_nested_plain_directory(self) -> None:
+    def test_worktree_path_is_derived_from_branch_suffix(self) -> None:
+        project = bootstrap_repos.Project(key="rocm-libraries", path=Path("/tmp/repos/rocm-libraries"))
+        self.assertEqual(
+            bootstrap_repos.worktree_path(Path("/tmp/worktrees"), project, "users/sareeder/jira/fix"),
+            Path("/tmp/worktrees/rocm-libraries/jira--fix"),
+        )
+
+
+    def test_creates_worktree_at_branch_derived_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            subprocess.run(["git", "init", str(root)], check=True, stdout=subprocess.DEVNULL)
-            nested = root / "repos" / "not-a-repo"
-            nested.mkdir(parents=True)
+            repo = self.make_repo(root)
+            subprocess.run(["git", "-C", str(repo), "config", "user.email", "test@example.com"], check=True)
+            subprocess.run(["git", "-C", str(repo), "config", "user.name", "Test"], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "--allow-empty", "-m", "initial"], check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(["git", "-C", str(repo), "branch", "users/sareeder/feature-x"], check=True)
 
-            self.assertEqual(bootstrap_repos.is_git_worktree(root, dry_run=False), True)
-            self.assertEqual(bootstrap_repos.is_git_worktree(nested, dry_run=False), False)
+            rc = bootstrap_repos.main([
+                "--repos-dir", str(root / "repos"),
+                "--worktrees-dir", str(root / "worktrees"),
+                "--project", "rocm-libraries",
+                "--worktree", "rocm-libraries", "users/sareeder/feature-x",
+                "--no-fetch",
+            ])
+            destination = root / "worktrees" / "rocm-libraries" / "feature-x"
 
-    def test_dry_run_prints_clone_and_worktree_commands(self) -> None:
+            self.assertEqual(rc, 0)
+            self.assertTrue((destination / ".git").exists())
+            self.assertEqual(
+                subprocess.check_output(["git", "-C", str(destination), "branch", "--show-current"], text=True).strip(),
+                "users/sareeder/feature-x",
+            )
+
+    def test_dry_run_discovers_repo_and_creates_branch_derived_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            registry = self.write_registry(root)
+            self.make_repo(root)
             stdout = StringIO()
             with redirect_stdout(stdout):
                 rc = bootstrap_repos.main([
-                    "--registry", str(registry),
                     "--repos-dir", str(root / "repos"),
                     "--worktrees-dir", str(root / "worktrees"),
-                    "--project", "libs",
-                    "--worktree", "libs", "feature-x", "origin/develop",
+                    "--project", "rocm-libraries",
+                    "--worktree", "rocm-libraries", "users/sareeder/feature-x",
+                    "--no-fetch",
                     "--dry-run",
                 ])
             output = stdout.getvalue()
 
         self.assertEqual(rc, 0)
-        self.assertIn("git clone --depth 1 git@github.com:ROCm/rocm-libraries.git", output)
+        self.assertNotIn("Registry", output)
         self.assertIn("worktree add", output)
         self.assertIn("worktrees/rocm-libraries/feature-x", output)
 

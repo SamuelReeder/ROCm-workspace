@@ -1,8 +1,10 @@
 ## Environment
-Controller host: HPE (`hpe-sjc2-43`) when deployed. Verify the current host with `hostname` before assuming local paths.
+Controller host: HPE (`hpe-sjc2-43`) when deployed. Verify the current host with
+`hostname` before assuming local paths.
 
-Use `.claude/registry/projects.json` to resolve project context.
-Verify paths with `test -d` before accessing them.
+Use the workspace filesystem to resolve project context. Immediate git
+directories under `repos/` are projects; verify paths with `test -d` and git
+metadata before accessing them.
 
 ## Execution routing
 - Teams harness agents run locally on the controller host/container by default.
@@ -11,11 +13,23 @@ Verify paths with `test -d` before accessing them.
 - This workspace does not provide SSH wrappers or remote-execution CLIs. If a deployment provides remote execution, follow the runtime instructions injected by that deployment instead of looking for scripts in this repo.
 
 ## Projects
-- **TheRock** (rock, therock, hip, rocm-build, superbuild) — `/home/AMD/sareeder/TheRock`
-- **rocm-libraries** (libs, rocmlibs, libraries, hipdnn, miopen-provider, hipblaslt-provider, dnn-benchmarking, bench, benchmark, dnn-bench, perf, benchmarking) — `/home/AMD/sareeder/full/rocm-libraries`
-- **mlse-tools-internal** (mlse, tools, automation, slurm, kubernetes, staging, promote) — `/home/AMD/sareeder/mlse-tools-internal`
-- **cudnn-frontend** (cudnn, cudnn-fe, frontend) — `/home/AMD/sareeder/cudnn-frontend`
 
-## Jira: ALMIOPEN→rocm-libraries, THEROCK→therock, MLSE→mlse-tools
+Discover projects with:
 
-Use `.claude/registry/projects.json` to resolve project context.
+```bash
+for repo in repos/*; do
+  test -d "$repo/.git" && basename "$repo"
+done
+```
+
+Resolve a worktree from a repository's git worktree list:
+
+```bash
+git -C repos/<project> worktree list --verbose
+```
+
+## Jira
+
+Use `.claude/skills/orchestrate/jira-mapping.json` for Jira project keys and
+base branches. Confirm the mapped repository exists under `repos/` before
+starting work.
