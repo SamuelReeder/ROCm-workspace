@@ -93,18 +93,35 @@ The workspace prevents accidental cross-contamination with path validation.
 
 ## Build Examples
 
-**TheRock:**
+Use the checked-out hipDNN docs for standalone prerequisites and targets:
+`repos/rocm-libraries/projects/hipdnn/docs/Building.md` and
+`repos/rocm-libraries/projects/hipdnn/docs/Superbuild.md`. The repository root
+`CMakePresets.json` defines `hipdnn-providers` as the provider-enabled preset;
+`hipdnn` is hipDNN-only.
+
+**Standalone hipDNN:**
 
 ```bash
-ninja -j 128 -C <worktree>/build hipDNN+build
+cmake -S <worktree>/projects/hipdnn \
+      -B <worktree>/projects/hipdnn/build \
+      -G Ninja
+cmake --build <worktree>/projects/hipdnn/build --target check
 ```
 
-**rocm-libraries:**
+**hipDNN with supported provider plugins:**
 
 ```bash
-ninja -j 128 -C <worktree>/build check
-ninja -j 128 -C <worktree>/build format
+cd <worktree>
+cmake --preset hipdnn-providers
+cmake --build build
+cmake --build build --target hipdnn-check miopen-provider-check hipblaslt-provider-check
 ```
+
+The `hipdnn-providers` preset builds hipDNN, MIOpen Provider, hipBLASLt
+Provider, and integration tests together. Use
+`scripts/build_and_test_providers.sh` for the same workflow. Do not use the
+old standalone provider loop or an unqualified root
+`check` target; superbuild test targets are component-prefixed.
 
 ## Architecture
 

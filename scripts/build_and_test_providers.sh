@@ -1,98 +1,56 @@
-#!/bin/bash
-# Build and test all hipdnn dnn-providers standalone.
-# Run from the root of a rocm-libraries worktree, e.g.:
-#   cd /home/AMD/sareeder/worktrees/rocmlibs-plugin-sdk-flatbuffers
-#   /home/AMD/sareeder/ROCm-workspace/scripts/build_and_test_providers.sh
+#!/usr/bin/env bash
+# Build and test hipDNN with the supported provider plugins through the
+# rocm-libraries superbuild. Run from any directory inside a rocm-libraries
+# worktree, or from its root.
 #
 # Usage: build_and_test_providers.sh [--build-only] [--clean]
-#   --build-only  Skip running tests after building
-#   --clean       Remove each provider's build directory before configuring
+#   --build-only  Skip the component test targets after building
+#   --clean       Remove the repository-root build directory before configuring
 
 set -euo pipefail
 
-WORKTREE_ROOT="$(pwd)"
-PROVIDERS_DIR="${WORKTREE_ROOT}/dnn-providers"
-BUILD_ONLY=""
-CLEAN=""
+WORKTREE_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+BUILD_DIR="${WORKTREE_ROOT}/build"
+BUILD_ONLY=0
+CLEAN=0
+
 for arg in "$@"; do
     case "$arg" in
-        --build-only) BUILD_ONLY="--build-only" ;;
-        --clean) CLEAN="--clean" ;;
+        --build-only) BUILD_ONLY=1 ;;
+        --clean) CLEAN=1 ;;
+        *)
+            echo "ERROR: unknown option: ${arg}" >&2
+            exit 2
+            ;;
     esac
 done
 
-CMAKE_SDK_FLAGS=(
-    "-DCMAKE_PREFIX_PATH=/opt/rocm"
-    "-DCMAKE_BUILD_TYPE=Release"
-)
+if [[ ! -f "${WORKTREE_ROOT}/CMakePresets.json" ]]; then
+    echo "ERROR: ${WORKTREE_ROOT} is not a rocm-libraries checkout" >&2
+    exit 1
+fi
 
-PROVIDERS=(hip-kernel-provider miopen-provider hipblaslt-provider fusilli-provider)
-declare -A RESULTS
+if [[ "${CLEAN}" -eq 1 ]]; then
+    echo "[clean] Removing ${BUILD_DIR}..."
+    rm -rf "${BUILD_DIR}"
+fi
 
-build_and_test_provider() {
-    local name="$1"
-    local src="${PROVIDERS_DIR}/${name}"
-    local bld="${src}/build"
+cd "${WORKTREE_ROOT}"
 
-    echo ""
-    echo "========================================"
-    echo " ${name}"
-    echo "========================================"
+echo "[cmake] Configuring hipDNN and supported providers..."
+cmake --preset hipdnn-providers
 
-    if [[ ! -d "${src}" ]]; then
-        echo "SKIP: source directory not found"
-        RESULTS[$name]="SKIP (no source)"
-        return
-    fi
+echo "[ninja] Building hipDNN and supported providers..."
+cmake --build "${BUILD_DIR}"
 
-    # Clean
-    if [[ -n "${CLEAN}" && -d "${bld}" ]]; then
-        echo "[clean] Removing ${bld}..."
-        rm -rf "${bld}"
-    fi
+if [[ "${BUILD_ONLY}" -eq 1 ]]; then
+    echo "[summary] Build completed; tests skipped"
+    exit 0
+fi
 
-    # Configure
-    echo "[cmake] Configuring..."
-    if ! cmake -S "${src}" -B "${bld}" -G Ninja \
-        "${CMAKE_SDK_FLAGS[@]}" \
-        -DCMAKE_INSTALL_PREFIX="${bld}/install" \
-        2>&1; then
-        echo "SKIP: cmake configure failed (likely missing dependencies)"
-        RESULTS[$name]="SKIP (configure failed)"
-        return
-    fi
-
-    # Build
-    echo "[ninja] Building..."
-    if ! ninja -C "${bld}" 2>&1; then
-        echo "FAIL: build failed"
-        RESULTS[$name]="FAIL (build)"
-        return
-    fi
-
-    if [[ "${BUILD_ONLY}" == "--build-only" ]]; then
-        RESULTS[$name]="BUILD OK (tests skipped)"
-        return
-    fi
-
-    # Test
-    echo "[ninja] Running tests..."
-    if ninja -C "${bld}" check 2>&1; then
-        RESULTS[$name]="PASS"
-    else
-        RESULTS[$name]="FAIL (tests)"
-    fi
-}
-
-for provider in "${PROVIDERS[@]}"; do
-    build_and_test_provider "${provider}"
+for target in hipdnn-check miopen-provider-check hipblaslt-provider-check; do
+    echo "[test] Running ${target}..."
+    cmake --build "${BUILD_DIR}" --target "${target}"
 done
 
-echo ""
-echo "========================================"
-echo " Summary"
-echo "========================================"
-for provider in "${PROVIDERS[@]}"; do
-    printf "  %-30s %s\n" "${provider}" "${RESULTS[$provider]}"
-done
-echo ""
+echo "[summary] hipDNN, MIOpen Provider, and hipBLASLt Provider passed"
