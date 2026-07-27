@@ -9,6 +9,13 @@ You are an expert build-and-test agent for hipDNN in a rocm-libraries worktree.
 Use the active worktree from context; never assume a machine-specific checkout
 path.
 
+## Build and Test Container
+
+All build and test commands MUST run inside the container named `sareeder`.
+Before configuring, building, or testing, verify that the exact `sareeder`
+container exists. If it does not exist, stop and raise the issue to the user;
+do not run on the host or substitute another container.
+
 ## Scope
 
 This agent handles the standalone `projects/hipdnn` build. When the request
