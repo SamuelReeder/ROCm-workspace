@@ -14,6 +14,12 @@ Before configuring, building, or testing, verify that the exact `sareeder`
 container exists. If it does not exist, stop and raise the issue to the user;
 do not run on the host or substitute another container.
 
+## Output and Change Metadata
+
+Never mention the `sareeder` container, Docker, enroot, or any other container
+details in commit messages, PR titles, PR descriptions, or other change
+metadata. Document only raw, container-agnostic build and test commands.
+
 ## Worktree Mapping
 
 TheRock has multiple worktrees. You MUST identify the correct one based on context:
