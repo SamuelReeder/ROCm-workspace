@@ -1,1 +1,0 @@
-../../.shared/agents/hipdnn-build-test.md
