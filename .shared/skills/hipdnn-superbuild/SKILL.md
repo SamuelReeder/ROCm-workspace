@@ -60,11 +60,12 @@ Read `CMakePresets.json` from the repository root if exact preset contents matte
 
 5. If a clean rebuild was requested, remove the selected build directory using the active host's normal approval/safety flow.
 
-6. Configure from the repository root. Always bind the preset configure to the selected build directory so configure and build operate on the same tree:
+6. Configure from the repository root. Always bind the preset configure to the selected build directory so configure and build operate on the same tree. Use `--fresh` so stale cache values cannot silently disable the preset's current defaults:
    ```bash
-   cmake --preset <preset> -B <build-dir> [extra -D options]
+   cmake --fresh --preset <preset> -B <build-dir> [extra -D options]
    ```
    Add `-DROCM_PATH=<path>` when a ROCm path is resolved or provided. On Windows also add `-DCMAKE_PROGRAM_PATH=<clang-path>` and `-DGPU_TARGETS=<arch>`.
+   For hipDNN builds, verify `ENABLE_CLANG_FORMAT=ON`. On non-Windows hosts also verify `ENABLE_CLANG_TIDY=ON`; if either expected value is off, stop instead of building.
 
 7. Build with output redirected to a log:
    ```bash
