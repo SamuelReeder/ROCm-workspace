@@ -107,6 +107,46 @@ Store the beads task ID for subsequent phases.
 ## Phase 5 — Planning (Orchestrator — You)
 
 **You do the planning yourself.** Do NOT spawn a Plan subagent. Use your own Glob, Grep, and Read tools to explore the codebase and create the plan.
+### Design Gate
+
+Before drafting a plan:
+
+1. Triage the task. Use GREEN only when an existing design applies without drift and the result is locally verifiable.
+2. Enter Design mode for a new public API, breaking change, cross-layer change, new permanent storage, or any open mechanism or ownership rule.
+3. Ground the open question with direct reading, research, or a bounded spike. Compare at least two source-grounded options.
+4. Present the decision to the user with structured options. Prose is not sign-off.
+5. Record the fixed point, decision, invariants, rejected alternatives, and local oracle before planning.
+6. If any architectural decision remains open, write no plan and return:
+   ```
+   design not closed: <item>; <item>
+   ```
+
+The orchestrator occupies Design mode inline. Do not spawn a Designer agent.
+For GREEN tasks:
+
+- Do not create a design document or request plan approval.
+- Record `GREEN: <local oracle>` in beads.
+- Pass a concise execution record with the fixed point, files, local oracle, and stop event to Phase 6.
+
+For GREEN tasks, skip normal planning and plan approval. Set `{{implementation_plan}}` to:
+
+```
+## GREEN Execution Record
+
+## Fixed Point
+<property that must remain true>
+
+## Files
+<files to inspect or modify>
+
+## Local Oracle
+<focused check that proves the change>
+
+## Stop Event
+<condition that requires STOP:>
+```
+
+For normal and RED tasks:
 
 Read the planning instructions:
 ```
@@ -122,18 +162,22 @@ Follow those instructions directly, substituting the context values:
 - `{{acceptance_criteria}}` — acceptance criteria
 - `{{beads_id}}` — beads task ID
 
-Your planning work:
+Your planning work, after the Design Gate passes:
 1. Read the project CLAUDE.md at `<worktree_path>/CLAUDE.md`
 2. Explore code areas relevant to the task using Glob, Grep, Read
 3. Identify files to modify, patterns to follow, and risks
 4. Produce the structured plan output format from the template
 
-After creating the plan:
+For normal and RED tasks, after creating the plan:
 
-1. **Record the plan in beads**:
+1. **Record the design synopsis and plan in beads**:
    ```bash
-   source "$HOME/.cargo/env" && br comments add <id> "PLAN: <one-line plan summary>"
+   source "$HOME/.cargo/env"
+   br comments add <id> "DESIGN: <full synopsis from the approved plan>"
+   br comments add <id> "PLAN: <one-line plan summary>"
    ```
+
+
 
 2. **Present the plan to the user** via `AskUserQuestion`:
    - Show the full plan text
@@ -177,12 +221,20 @@ Spawn a `general-purpose` subagent with the filled template:
 Task(subagent_type="general-purpose", prompt=<filled template>, mode="bypassPermissions")
 ```
 
-**Store the returned `agentId`** — this will be used to resume the same agent for build fixes and review findings, preserving its full context.
+**Store the returned `agentId`** — use it for mechanical build/test fixes only. Never resume it after `STOP:` or an architectural review finding.
 
 The implementation agent will:
 - Follow the approved plan (skipping broad exploration — the plan provides context)
 - Implement and commit changes
 - Update beads task with progress
+### STOP Handling
+
+If the implementation agent returns `STOP:`, halt all related implementation and build dispatches. Do not resume the halted agent. Read the relevant source directly, identify the violated invariant, and escalate the decision with structured options. Record the decision, then dispatch a fresh agent with the closed decision and the superseded STOP.
+
+Treat a halt with evidence as a successful dispatch result. Retry only mechanical failures such as timeouts, tooling errors, or malformed output.
+
+
+Proceed only when the implementation agent did not return `STOP:`.
 
 ### Build/Test Verification
 
@@ -200,7 +252,13 @@ You are a build/test runner. Run the following commands in {{worktree_path}} and
 
 Run each command. Report results as: BUILD: PASS|FAIL, TEST: PASS|FAIL|SKIPPED, with any error output verbatim.
 ")
+
 ```
+
+Classify the failure before resuming the implementation agent:
+
+- A compile error, lint failure, or diagnosed test break is mechanical. Resume the original agent.
+- A failure that requires an unclosed decision, changes ownership, or expands scope stops the line. Do not resume the original agent. Route the issue to Design.
 
 **If build/test fails**: resume the **original implementation agent** with the build errors to fix:
 
@@ -253,8 +311,9 @@ The review agent will:
 
 Parse the review agent's verdict:
 
-- **If PASS** → proceed to Phase 9
-- **If FAIL** → **resume the original implementation agent** to address findings:
+- **If PASS** → proceed to Phase 9.
+- **If FAIL because of a hidden design decision, contradicted evidence, or scope growth** → stop the line and route the issue to Design. Do not resume the original implementation agent.
+- **If FAIL because of a code defect or diagnosed test break** → resume the original implementation agent to address findings:
   ```
   Task(subagent_type="general-purpose", resume=<impl_agent_id>, mode="bypassPermissions", prompt="
   ## Review Findings to Address

@@ -18,6 +18,18 @@ These are instructions for you (the orchestrator) to create an implementation pl
 
 {{acceptance_criteria}}
 
+## Design Gate
+
+Before drafting a plan:
+
+1. Confirm that the design has human sign-off.
+2. Record the fixed point, decisions, rejected alternatives, invariants, and local oracle.
+3. If an architectural decision remains open, write no plan and return:
+   ```
+   design not closed: <item>; <item>
+   ```
+4. Do not hide an unresolved decision in a task that says to choose, determine, select, or design an appropriate approach.
+
 ## Instructions
 
 1. **Read the project CLAUDE.md** at `{{worktree_path}}/CLAUDE.md` (if it exists) to understand project-specific conventions, build instructions, and patterns.
@@ -41,6 +53,27 @@ These are instructions for you (the orchestrator) to create an implementation pl
 6. **Produce a structured plan** in this exact format:
 
 ```
+## Fixed Point
+
+<property that remains true if the implementation changes>
+
+## Decisions
+
+- <closed decision> — <evidence>
+- Rejected: <alternative> — <reason>
+
+## Invariants
+
+- <property that must hold> — <how it is checked>
+
+## Local Oracle
+
+- <focused check below end-to-end verification>
+
+## Stop Event
+
+<condition that requires the worker to return STOP:>
+
 ## Approach
 
 <High-level strategy: 2-3 sentences describing the overall approach>
@@ -69,6 +102,10 @@ These are instructions for you (the orchestrator) to create an implementation pl
 
 - <anything that could go wrong, edge cases, or areas needing clarification>
 - ... (or "None identified")
+
+## Open Questions
+
+- None that require an architectural decision. List only factual verification items.
 ```
 
 ## Rules
@@ -76,3 +113,4 @@ These are instructions for you (the orchestrator) to create an implementation pl
 - Use absolute paths for all file references.
 - Be specific — name exact files, functions, and line ranges when possible.
 - Keep the plan actionable. Each item should be concrete enough that an implementation agent can follow it without additional exploration.
+- Do not approve the plan while an architectural decision remains open.

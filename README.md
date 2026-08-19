@@ -70,11 +70,7 @@ claude
 Available slash commands:
 
 ```text
-/worktrees                         # list all discovered repositories/worktrees
-/worktrees rocm-libraries          # list one repository's worktrees
 /orchestrate ALMIOPEN-1234         # Jira-to-PR orchestration workflow
-/review-pr rocm-libraries          # review a branch or worktree
-/squash-prep rocm-libraries        # suggest squash strategy
 ```
 
 Mention a project or component in a prompt to route work. Project resolution is
@@ -129,7 +125,7 @@ old standalone provider loop or an unqualified root
 ROCm-workspace/
 ├── CLAUDE.md                    # hub instructions
 ├── .claude/
-│   ├── commands/                # /worktrees, /orchestrate, /review-pr, /squash-prep
+│   ├── commands/                # /orchestrate
 │   ├── skills/                  # auto-triggered skills and workflow templates
 │   └── hooks/                   # workspace safety guidance
 ├── repos/                       # gitignored repository clones

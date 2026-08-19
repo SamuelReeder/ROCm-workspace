@@ -33,6 +33,7 @@ Derive the following from the Jira description and implementation summary:
 - **Technical Details**: What changed and how — approach, key decisions, non-obvious details
 - **Test Plan**: A checklist of tests performed — mark completed ones with `[x]`, pending with `[ ]`
 
+When closing the beads task, set its design field to the full synopsis from the approved plan. Include the fixed point, decisions, rejected alternatives, invariants, local oracle, and stop event.
 ## Rules
 
 - Use absolute paths for all operations.

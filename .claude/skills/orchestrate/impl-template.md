@@ -22,13 +22,29 @@ You are implementing a task from Jira in a ROCm project.
 
 {{implementation_plan}}
 
-Follow this plan. If you discover the plan needs adjustment during implementation, note the deviation in a beads comment before proceeding.
+Follow this plan. Do not adapt it silently. If evidence contradicts the plan or completing the work requires an unclosed decision, return `STOP:` instead of editing around the issue.
 
 ## Instructions
 
 The approved plan above already includes project conventions, relevant file context, and patterns to follow. Skip broad exploration — read only the specific files you are modifying.
 
-1. **Follow the approved plan.** Implement the changes described in the plan. If something doesn't work as expected, note the deviation in a beads comment and adapt.
+## Stop the line
+
+Halt edits and return immediately if:
+
+- evidence contradicts the plan;
+- the work requires touching a file outside assigned ownership, or a subsystem the plan did not name;
+- completing the task requires choosing something the plan did not close.
+
+Return:
+
+```
+STOP: <the violated invariant, constraint, or plan assumption>
+```
+
+Include the contradicting evidence and at least one alternative. Treat this halt as a successful dispatch result. Do not work around the issue.
+
+1. **Follow the approved plan.** Implement the changes described in the plan. If something does not work as expected, stop and return `STOP:` with evidence. Do not note a deviation and adapt without sign-off.
 
 2. **Implement the changes.** Follow project conventions from the plan. Keep changes focused and minimal — don't refactor unrelated code.
 

@@ -43,6 +43,32 @@ python3 scripts/bootstrap_repos.py --project rocm-libraries --worktree rocm-libr
 4. Verify before done with a build, test, or focused review.
 5. Attempt autonomous bug fixing before escalating.
 
+### Design and Escalation
+
+- Use `docs/design-and-escalation.md` as the full policy record.
+- Triage work before planning. Use GREEN for established, locally verifiable changes. Use Design mode for open decisions.
+- Do not draft a plan while an architectural decision remains open.
+- Workers must return `STOP: <violated invariant>` with evidence and one alternative. They must not work around the issue.
+- Stop all affected implementation dispatches after a `STOP:` result or contradicted assumption.
+- Escalate decisions with structured options. Resume with a fresh agent after sign-off.
+- Treat a documented halt with evidence as a successful dispatch result.
+
+### Open-Ended Work
+
+Principle 1 covers tasks that have a groove. When there isn't one — a new subsystem, a new representation or protocol, an ownership boundary between components, or a rewrite — the codebase does not supply the missing decisions, and an agent asked to implement settles them silently while writing code. The review then lands on a coherent implementation of a design nobody chose.
+
+For that work, read the `design-first` skill and keep the modes separate: orient → investigate → debate → decide → plan → implement → verify → checkpoint. Recommendations, not gates; the point is that implementation stays behind the last decision actually validated.
+
+- State the mode before shifting: "gather context and concur or challenge", "do not turn this into a task yet", "implement this milestone and stop".
+- Separate required properties from candidate mechanisms, so a pivot reads as progress rather than failure.
+- Do not plan while the design is open. A plan containing "choose an appropriate representation" still hides design work inside implementation.
+- Bound each milestone: exact outcome, out-of-scope list, acceptance evidence, and the event that stops the agent.
+- Build a local correctness oracle before end-to-end runs — fixtures, dumps, invariant checks. `X violates invariant Y` beats "the run looked wrong".
+- Stop a bad path by naming the violated invariant, not by restating the request more forcefully.
+- Record fixed point, decisions, rejected alternatives, invariants, and open questions in the project's design docs or a bead. It is the part that survives a pivot.
+
+Spikes are expected to be thrown away: one narrow question, a hard stop, hard-coded values allowed only while the spike stays disposable. Keep the evidence, discard the structure.
+
 ## Key Rules
 
 1. Use absolute paths when operating inside project clones/worktrees.

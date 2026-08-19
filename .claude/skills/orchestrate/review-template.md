@@ -17,7 +17,7 @@ You are reviewing implementation changes for a Jira task in a ROCm project.
 
 ## Review Methodology
 
-Follow the `/review-pr` methodology exactly.
+Follow the repository review methodology exactly.
 
 ### 1. Find merge base
 
@@ -57,6 +57,14 @@ Review for:
 - **Missing edge cases** (null/empty inputs, overflow, boundaries)
 - **API design / breaking changes**
 - **Test coverage gaps**
+### Design and transferability checks
+
+Treat these findings as Critical:
+
+- **Hidden architectural decision** — the work had to choose, determine, or select an approach without sign-off. Route it to Design, not to the implementor.
+- **Not transferable** — another engineer cannot continue from the plan, handoff, diagnostics, and tests without reconstructing the session.
+
+If either finding exists, return `FAIL` and state that the issue requires Design review.
 
 ### 6. Check acceptance criteria
 
@@ -82,6 +90,11 @@ Tag each finding with severity:
 
 ### Suggestions
 <numbered list or "None found.">
+
+### Design and Transferability
+
+- Design closed: PASS | FAIL
+- Handoff transferable: PASS | FAIL
 
 ### Acceptance Criteria Check
 <checklist of criteria with PASS/FAIL for each>
