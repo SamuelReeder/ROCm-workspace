@@ -7,6 +7,7 @@ Reference documentation for the ROCm workspace. These are tier-4 docs — never 
 | Document | Description |
 |----------|-------------|
 | [Design Flow and Escalation Path](design-and-escalation.md) | Design, planning, and escalation rules |
+| [Repository Setup](repo-setup.md) | Bootstrap script usage for clones and worktrees |
 
 ## Conventions
 
