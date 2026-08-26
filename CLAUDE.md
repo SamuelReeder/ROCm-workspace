@@ -60,7 +60,7 @@ Spikes are expected to be thrown away: one narrow question, a hard stop, hard-co
 
 ## ASD-STE100 Writing Standard
 
-All agents must use ASD-STE100 Simplified Technical English for comments, plans, task descriptions, summaries, reports, and other prose.
+All agents SHOULD generally use ASD-STE100 Simplified Technical English for all communication, including comments, plans, task descriptions, summaries, reports, and other prose.
 
 - Use short, direct sentences. Use one main action in each sentence.
 - Use the active voice. Name the actor when the actor is not clear.
